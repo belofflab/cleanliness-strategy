@@ -1,0 +1,103 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wallBefore" x1="0" y1="0" x2="0" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B7B2A8"/>
+      <stop offset="1" stop-color="#9A958A"/>
+    </linearGradient>
+    <linearGradient id="floorBefore" x1="0" y1="720" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8E7B62"/>
+      <stop offset="1" stop-color="#6E5C46"/>
+    </linearGradient>
+    <linearGradient id="windowBefore" x1="1140" y1="120" x2="1140" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8A95A0"/>
+      <stop offset="1" stop-color="#AEB6BD"/>
+    </linearGradient>
+    <linearGradient id="sofaBefore" x1="0" y1="520" x2="0" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C7E82"/>
+      <stop offset="1" stop-color="#5F6164"/>
+    </linearGradient>
+    <radialGradient id="gloom" cx="0.5" cy="0.4" r="0.8">
+      <stop stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1A140C" stop-opacity="0.45"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Wall & floor -->
+  <rect width="1600" height="1000" fill="url(#wallBefore)"/>
+  <rect y="720" width="1600" height="280" fill="url(#floorBefore)"/>
+  <g opacity="0.3" stroke="#4A3D2C" stroke-width="3">
+    <path d="M0 820H1600"/><path d="M0 910H1600"/>
+    <path d="M360 720L300 1000"/><path d="M760 720L740 1000"/>
+    <path d="M1160 720L1200 1000"/>
+  </g>
+  <rect y="700" width="1600" height="22" fill="#857560"/>
+
+  <!-- Stains & dirt on wall -->
+  <g fill="#6F6354" opacity="0.5">
+    <ellipse cx="380" cy="430" rx="70" ry="120"/>
+    <ellipse cx="860" cy="200" rx="120" ry="60"/>
+    <ellipse cx="200" cy="250" rx="55" ry="90"/>
+  </g>
+  <g stroke="#5C5446" stroke-width="4" opacity="0.4">
+    <path d="M620 110C640 200 600 260 660 360"/>
+    <path d="M1380 140C1360 230 1400 300 1360 400"/>
+  </g>
+
+  <!-- Window (dirty) -->
+  <rect x="980" y="120" width="320" height="440" rx="14" fill="#7A746B"/>
+  <rect x="998" y="138" width="284" height="404" rx="8" fill="url(#windowBefore)"/>
+  <path d="M1140 138V542M998 340H1282" stroke="#6E6860" stroke-width="14"/>
+  <g stroke="#6B665C" stroke-width="3" opacity="0.6">
+    <path d="M1030 180C1060 240 1020 300 1060 360"/>
+    <path d="M1200 200C1170 260 1210 320 1180 400"/>
+  </g>
+
+  <!-- Crooked framed picture -->
+  <g transform="rotate(-7 410 275)">
+    <rect x="300" y="200" width="220" height="150" rx="8" fill="#857B6C" stroke="#5E5648" stroke-width="6"/>
+    <path d="M315 320L380 250L430 300L470 260L505 320Z" fill="#6E665A"/>
+  </g>
+
+  <!-- Wilted plant -->
+  <rect x="150" y="600" width="90" height="120" rx="10" fill="#7A5C40"/>
+  <path d="M195 600C150 540 150 500 175 470C185 540 200 560 195 600Z" fill="#6E6A42"/>
+  <path d="M195 600C245 560 255 520 235 500C210 560 200 570 195 600Z" fill="#7E7A4E"/>
+  <path d="M150 590L120 640M250 600L290 650" stroke="#6E6A42" stroke-width="6"/>
+
+  <!-- Messy sofa -->
+  <rect x="430" y="560" width="560" height="200" rx="34" fill="url(#sofaBefore)"/>
+  <rect x="430" y="520" width="120" height="240" rx="30" fill="#6A6C70"/>
+  <rect x="870" y="520" width="120" height="240" rx="30" fill="#6A6C70"/>
+  <rect x="555" y="540" width="150" height="100" rx="18" fill="#82848A" transform="rotate(-9 630 590)"/>
+  <rect x="720" y="565" width="140" height="95" rx="18" fill="#76787E" transform="rotate(7 790 612)"/>
+  <g stroke="#4C4E51" stroke-width="3" opacity="0.5">
+    <path d="M470 660H950"/><path d="M520 700H900"/>
+  </g>
+  <rect x="470" y="740" width="40" height="50" rx="8" fill="#4F5154"/>
+  <rect x="910" y="740" width="40" height="50" rx="8" fill="#4F5154"/>
+
+  <!-- Coffee table with clutter -->
+  <rect x="560" y="800" width="300" height="70" rx="14" fill="#7A6147"/>
+  <rect x="585" y="868" width="20" height="60" rx="6" fill="#5E4A34"/>
+  <rect x="815" y="868" width="20" height="60" rx="6" fill="#5E4A34"/>
+  <rect x="600" y="760" width="34" height="60" rx="8" fill="#6B7A52"/>
+  <rect x="660" y="772" width="44" height="48" rx="6" fill="#8A8170"/>
+  <circle cx="790" cy="792" r="26" fill="#7E746A"/>
+  <path d="M770 818c20 8 40 8 60 0" stroke="#5E564C" stroke-width="4"/>
+
+  <!-- Scattered trash on floor -->
+  <g>
+    <rect x="300" y="900" width="80" height="26" rx="8" fill="#5C4E3A" transform="rotate(-14 340 913)"/>
+    <circle cx="1140" cy="930" r="22" fill="#5C4E3A"/>
+    <rect x="1000" y="950" width="70" height="20" rx="6" fill="#6B5C44" transform="rotate(10 1035 960)"/>
+    <path d="M430 950l40 6-10 30z" fill="#574a37"/>
+  </g>
+  <g fill="#4A3D2C" opacity="0.4">
+    <ellipse cx="700" cy="950" rx="160" ry="30"/>
+    <ellipse cx="1180" cy="880" rx="90" ry="24"/>
+  </g>
+
+  <!-- Dust / gloom overlay -->
+  <rect width="1600" height="1000" fill="url(#gloom)"/>
+</svg>
+

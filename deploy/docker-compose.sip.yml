@@ -1,0 +1,33 @@
+# SIP-сервер для IP-телефонии Calltracking.ru (переадресация виртуальных номеров).
+#
+# Запуск (на сервере, из /opt/clean-comp):
+#   sed "s/__MANAGER_PASSWORD__/$(openssl rand -hex 16)/" \
+#       deploy/sip/pjsip.conf.template > deploy/sip/pjsip.conf
+#   docker compose -f deploy/docker-compose.sip.yml up -d --build
+#
+# SIP-адрес для кабинета Calltracking: sip:100@<публичный IP сервера>
+# Софтфон менеджера: логин manager, пароль из deploy/sip/pjsip.conf, сервер <IP>.
+#
+# network_mode: host — SIP/RTP не дружат с NAT docker-сети; хостовая сеть
+# избавляет от подмены адресов в SDP. Порты: 5060/udp + RTP 10000–10100/udp.
+
+services:
+  sip:
+    build: ./sip
+    container_name: pc_sip
+    restart: always
+    network_mode: host
+    # Страховка от переполнения диска: даже при флуде SIP-сканеров лог
+    # контейнера не превысит 150 МБ (инцидент 2026-09-01 — 24 ГБ лога).
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    volumes:
+      - ./sip/asterisk.conf:/etc/asterisk/asterisk.conf:ro
+      - ./sip/modules.conf:/etc/asterisk/modules.conf:ro
+      - ./sip/logger.conf:/etc/asterisk/logger.conf:ro
+      - ./sip/pjsip.conf:/etc/asterisk/pjsip.conf:ro
+      - ./sip/extensions.conf:/etc/asterisk/extensions.conf:ro
+      - ./sip/rtp.conf:/etc/asterisk/rtp.conf:ro

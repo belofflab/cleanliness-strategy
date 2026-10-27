@@ -1,0 +1,52 @@
+# Promtail — сбор логов всех контейнеров через Docker API (сокет) и отправка в Loki.
+# Через docker_sd видим контейнеры по имени (метка container), читаем их stdout/stderr.
+# Наши flat-JSON логи бэкенда/фронтенда парсятся json-стейджем: level выносим в метку,
+# остальное (request_id/path/status_code) остаётся в теле строки для запросов LogQL.
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+    relabel_configs:
+      # Имя контейнера (pc_api, pc_web, …) → метка container.
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: container
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: stream
+      # Имя сервиса compose (api, web, …) → метка service.
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: service
+    pipeline_stages:
+      # 1) Пытаемся распарсить наш flat-JSON (бэкенд/фронтенд).
+      - json:
+          expressions:
+            level: level
+            request_id: request_id
+            method: method
+            path: path
+            status_code: status_code
+            ts: timestamp
+      # 2) Низкокардинальную метку level индексируем; остальное — в теле.
+      - labels:
+          level:
+          stream:
+      # 3) Время записи берём из лога (если есть), иначе — время приёма.
+      - timestamp:
+          source: ts
+          format: RFC3339Nano
+          fallback_formats:
+            - RFC3339
+          action_on_failure: skip

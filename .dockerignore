@@ -1,0 +1,12 @@
+# Контекст сборки frontend = корень монорепо. Исключаем лишнее.
+**/node_modules
+**/.next
+**/.git
+**/.idea
+**/.venv
+services
+deploy
+**/npm-debug.log
+**/.env
+!**/.env.example
+

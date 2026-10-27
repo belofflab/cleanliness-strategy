@@ -1,0 +1,23 @@
+{
+  "name": "pointclean",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Премиальная сетевая платформа клининга (web, admin, mobile, backend)",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace apps/web",
+    "build:web": "npm run build --workspace apps/web",
+    "lint:web": "npm run lint --workspace apps/web",
+    "mobile:install": "npm --prefix apps/mobile install",
+    "mobile:start": "npm --prefix apps/mobile start",
+    "mobile:go": "npm --prefix apps/mobile run go",
+    "mobile:tunnel": "npm --prefix apps/mobile run go:tunnel",
+    "mobile:apk": "npm --prefix apps/mobile run android:apk",
+    "mobile:ios:device": "npm --prefix apps/mobile run ios:device",
+    "mobile:doctor": "npm --prefix apps/mobile run doctor",
+    "mobile:build:android": "cd apps/mobile && eas build --platform android --profile production",
+    "mobile:build:ios": "cd apps/mobile && eas build --platform ios --profile production"
+  }
+}

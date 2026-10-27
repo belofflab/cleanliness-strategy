@@ -1,0 +1,24 @@
+# Override для локальной разработки: hot-reload backend и монтирование кода.
+# Запуск: make dev  (docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up)
+
+services:
+  api:
+    # Монтируем исходники, чтобы uvicorn перезагружался при изменениях.
+    volumes:
+      - ../services/api:/app
+    environment:
+      ENVIRONMENT: development
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  worker:
+    # В dev монтируем код, чтобы задачи подхватывали правки после рестарта воркера.
+    volumes:
+      - ../services/api:/app
+
+  beat:
+    volumes:
+      - ../services/api:/app
+
+  # Фронтенд в dev удобнее запускать вне Docker (npm run dev:web),
+  # поэтому здесь его не переопределяем.
+

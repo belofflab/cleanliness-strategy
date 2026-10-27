@@ -1,0 +1,55 @@
+; PJSIP-конфигурация SIP-сервера «Точка Чистоты» (приём звонков Calltracking.ru).
+;
+; ШАБЛОН: перед запуском скопируйте в pjsip.conf и замените __MANAGER_PASSWORD__
+; на сильный пароль (файл pjsip.conf в .gitignore — пароль не попадает в git):
+;   sed "s/__MANAGER_PASSWORD__/$(openssl rand -hex 16)/" pjsip.conf.template > pjsip.conf
+;
+; Схема: Calltracking переадресует звонок на sip:100@<IP сервера> (без регистрации),
+; Asterisk принимает его анонимным транком и звонит на софтфон менеджера
+; (аккаунт manager, регистрируется из Zoiper/Linphone/Telphin-приложения).
+
+[global]
+type=global
+user_agent=TochkaChistoty-PBX
+
+[transport-udp]
+type=transport
+protocol=udp
+bind=0.0.0.0:5060
+
+; ---------- Входящие от Calltracking (без аутентификации) ----------
+; Эндпоинт с именем anonymous ловит вызовы от незнакомых хостов и отправляет
+; их в контекст from-calltracking. Исходящих транков в системе нет вообще,
+; поэтому использовать нас для фрод-звонков «наружу» невозможно.
+[anonymous]
+type=endpoint
+context=from-calltracking
+allow=!all,alaw,ulaw
+direct_media=no
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+
+; ---------- Софтфон менеджера ----------
+[manager]
+type=endpoint
+context=internal
+auth=manager-auth
+aors=manager
+allow=!all,alaw,ulaw
+direct_media=no
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+
+[manager-auth]
+type=auth
+auth_type=userpass
+username=manager
+password=__MANAGER_PASSWORD__
+
+[manager]
+type=aor
+max_contacts=3
+remove_existing=yes
+qualify_frequency=60

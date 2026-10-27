@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.idea
+npm-debug.log
+README.md
+services
+deploy
+Makefile
+.env*
+!.env.example
+

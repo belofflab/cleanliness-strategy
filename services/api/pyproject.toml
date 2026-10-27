@@ -1,0 +1,53 @@
+[project]
+name = "tochka-chistoty-api"
+version = "0.1.0"
+description = "Backend API клинингового сервиса «Точка Чистоты»"
+requires-python = ">=3.12"
+
+# Основные зависимости сервиса (зеркало — requirements.txt, его ставит Docker).
+# Версии зафиксированы по нижней границе — обновляются осознанно.
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "redis>=5.0.0",
+    "httpx>=0.27.0",
+    # Фоновые задачи и интеграции
+    "celery>=5.4.0",
+    "boto3>=1.34.0",
+    "sentry-sdk[fastapi]>=2.0.0",
+    # Загрузка файлов (UploadFile/Form)
+    "python-multipart>=0.0.9",
+    # Аутентификация (JWT, хеширование паролей)
+    "pyjwt>=2.8.0",
+    "bcrypt>=4.0.0",
+    # Структурное логирование (JSON под Vector/Promtail/Loki)
+    "loguru>=0.7.2",
+]
+
+[project.optional-dependencies]
+# Зеркало — requirements-dev.txt (его ставит CI).
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.16.7",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Явный набор правил — одинаков локально и в CI независимо от версии ruff.
+# Расширение набора (I, UP, B) — отдельным шагом после Phase 0 аудита.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration: тесты, требующие живой PostgreSQL (DATABASE_URL; в CI — сервис postgres)",
+]

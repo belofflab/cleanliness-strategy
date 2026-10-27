@@ -1,0 +1,78 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wallAfter" x1="0" y1="0" x2="0" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBFDFF"/>
+      <stop offset="1" stop-color="#EAF2FB"/>
+    </linearGradient>
+    <linearGradient id="floorAfter" x1="0" y1="720" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E7D3B8"/>
+      <stop offset="1" stop-color="#D8BE9C"/>
+    </linearGradient>
+    <linearGradient id="windowAfter" x1="1140" y1="120" x2="1140" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BFE6FF"/>
+      <stop offset="1" stop-color="#E8F7FF"/>
+    </linearGradient>
+    <linearGradient id="sunBeam" x1="1140" y1="180" x2="640" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7DA" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#FFF7DA" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sofaAfter" x1="0" y1="520" x2="0" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9FB8D6"/>
+      <stop offset="1" stop-color="#7E9AC0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wall & floor -->
+  <rect width="1600" height="1000" fill="url(#wallAfter)"/>
+  <rect y="720" width="1600" height="280" fill="url(#floorAfter)"/>
+  <g opacity="0.25" stroke="#B89A74" stroke-width="3">
+    <path d="M0 820H1600"/><path d="M0 910H1600"/>
+    <path d="M360 720L300 1000"/><path d="M760 720L740 1000"/>
+    <path d="M1160 720L1200 1000"/>
+  </g>
+  <rect y="700" width="1600" height="22" fill="#F4FAFF"/>
+
+  <!-- Window with sunlight -->
+  <rect x="980" y="120" width="320" height="440" rx="14" fill="#FFFFFF"/>
+  <rect x="998" y="138" width="284" height="404" rx="8" fill="url(#windowAfter)"/>
+  <path d="M1140 138V542M998 340H1282" stroke="#FFFFFF" stroke-width="14"/>
+  <circle cx="1090" cy="230" r="40" fill="#FFFBE6" opacity="0.9"/>
+  <polygon points="1000,200 1280,360 720,900 560,820" fill="url(#sunBeam)" opacity="0.7"/>
+
+  <!-- Framed picture -->
+  <rect x="300" y="200" width="220" height="150" rx="8" fill="#FFFFFF" stroke="#CBD9EC" stroke-width="6"/>
+  <path d="M315 320L380 250L430 300L470 260L505 320Z" fill="#A7C7E7"/>
+  <circle cx="345" cy="245" r="16" fill="#FFE6A3"/>
+
+  <!-- Plant -->
+  <rect x="150" y="600" width="90" height="120" rx="10" fill="#C9966B"/>
+  <path d="M195 600C150 520 150 470 175 430C185 500 200 540 195 600Z" fill="#5FA46A"/>
+  <path d="M195 600C240 520 250 460 230 420C210 500 200 540 195 600Z" fill="#74C07E"/>
+  <path d="M195 600C195 510 205 460 200 410C195 500 190 540 195 600Z" fill="#4F9560"/>
+
+  <!-- Sofa -->
+  <rect x="430" y="560" width="560" height="200" rx="34" fill="url(#sofaAfter)"/>
+  <rect x="430" y="520" width="120" height="240" rx="30" fill="#8AA6CB"/>
+  <rect x="870" y="520" width="120" height="240" rx="30" fill="#8AA6CB"/>
+  <rect x="560" y="560" width="140" height="90" rx="18" fill="#B7CCE6"/>
+  <rect x="720" y="560" width="140" height="90" rx="18" fill="#B7CCE6"/>
+  <rect x="470" y="740" width="40" height="50" rx="8" fill="#6F89AC"/>
+  <rect x="910" y="740" width="40" height="50" rx="8" fill="#6F89AC"/>
+
+  <!-- Rug & coffee table -->
+  <ellipse cx="710" cy="880" rx="430" ry="70" fill="#EFE2CC"/>
+  <rect x="560" y="800" width="300" height="70" rx="14" fill="#D8B58A"/>
+  <rect x="560" y="800" width="300" height="20" rx="10" fill="#E9CEA9"/>
+  <rect x="585" y="868" width="20" height="60" rx="6" fill="#B98C5C"/>
+  <rect x="815" y="868" width="20" height="60" rx="6" fill="#B98C5C"/>
+  <circle cx="690" cy="790" r="14" fill="#7FB98B"/>
+  <rect x="740" y="775" width="70" height="22" rx="6" fill="#FFFFFF"/>
+
+  <!-- Sparkles -->
+  <g fill="#FFFFFF">
+    <path d="M1180 200l8 22 22 8-22 8-8 22-8-22-22-8 22-8z"/>
+    <path d="M560 470l6 16 16 6-16 6-6 16-6-16-16-6 16-6z"/>
+    <path d="M980 700l5 14 14 5-14 5-5 14-5-14-14-5 14-5z"/>
+  </g>
+</svg>
+

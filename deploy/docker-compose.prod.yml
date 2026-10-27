@@ -1,0 +1,164 @@
+# ==========================================================================
+# PointClean — PRODUCTION docker-compose.
+# Образы web/api собираются в CI (GitHub Actions) и публикуются в GHCR.
+# Прод НЕ собирает образы локально — только тянет готовые:
+#
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env pull
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d
+#
+# Отличия от dev-конфига:
+#   • Postgres/Redis НЕ публикуют порты наружу (доступны только внутри сети compose).
+#   • web и api слушают только 127.0.0.1 — наружу их проксирует системный Nginx
+#     (cleanliness.pro → web, api.cleanliness.pro → api; эталон — deploy/nginx/).
+#   • Именованные volume для данных Б/и медиа сохраняются между пересборками.
+# ==========================================================================
+
+# Ротация логов контейнеров: без лимита json-file растёт бесконечно —
+# 2026-09-01 лог pc_sip (24 ГБ) заполнил диск и уронил PostgreSQL.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+x-api-env: &api-env
+  ENVIRONMENT: ${ENVIRONMENT:-production}
+  DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://tochka:tochka@postgres:5432/tochka}
+  REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+  CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+  CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+  CORS_ORIGINS: ${CORS_ORIGINS:-["https://cleanliness.pro","https://www.cleanliness.pro","https://ufa.cleanliness.pro","https://tyumen.cleanliness.pro"]}
+  # Регионы: город по умолчанию (apex-домен) и базовый домен городских поддоменов.
+  DEFAULT_CITY_SLUG: ${DEFAULT_CITY_SLUG:-ufa}
+  PUBLIC_BASE_DOMAIN: ${PUBLIC_BASE_DOMAIN:-cleanliness.pro}
+  # Telegram-пинг операторам о новом лиде.
+  TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
+  TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+  TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+  # Динамический коллтрекинг Calltracking.ru (вебхук звонков).
+  CALLTRACKING_WEBHOOK_SECRET: ${CALLTRACKING_WEBHOOK_SECRET:-}
+  CALLTRACKING_CITY_NUMBERS: ${CALLTRACKING_CITY_NUMBERS:-}
+  # Офлайн-конверсии в Яндекс.Метрику (обучение автостратегий Директа).
+  YANDEX_METRIKA_TOKEN: ${YANDEX_METRIKA_TOKEN:-}
+  YANDEX_METRIKA_COUNTER_ID: ${YANDEX_METRIKA_COUNTER_ID:-109824753}
+  YANDEX_METRIKA_GOAL_DONE: ${YANDEX_METRIKA_GOAL_DONE:-CleaningDone}
+  S3_ENABLED: ${S3_ENABLED:-false}
+  S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-https://storage.yandexcloud.net}
+  S3_REGION: ${S3_REGION:-ru-central1}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-}
+  SMS_ENABLED: ${SMS_ENABLED:-false}
+  SMS_RU_API_ID: ${SMS_RU_API_ID:-}
+  JWT_SECRET: ${JWT_SECRET:?JWT_SECRET обязателен в production}
+  # Отдельный ключ хешей OTP/refresh (пусто = JWT_SECRET, предупреждение в логе).
+  TOKEN_HMAC_SECRET: ${TOKEN_HMAC_SECRET:-}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+  TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+
+services:
+  web:
+    # Образ собирается в CI (GitHub Actions) и публикуется в GHCR; прод его ТЯНЕТ.
+    # NEXT_PUBLIC_* инлайнятся в бандл на этапе сборки в CI (см. .github/workflows).
+    image: ${WEB_IMAGE:-ghcr.io/blanq-tech/clean-comp-web:latest}
+    container_name: pc_web
+    restart: always
+    logging: *default-logging
+    # Только локальный интерфейс — публикует наружу системный Nginx.
+    # Хост-порт настраивается (на общих серверах — во избежание конфликтов).
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    # Образ из CI/GHCR (прод не собирает, только тянет).
+    image: ${API_IMAGE:-ghcr.io/blanq-tech/clean-comp-api:latest}
+    container_name: pc_api
+    restart: always
+    logging: *default-logging
+    environment: *api-env
+    volumes:
+      # Локальные медиа/статика (если S3 отключён) сохраняются между пересборками.
+      - media:/app/media
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    image: ${API_IMAGE:-ghcr.io/blanq-tech/clean-comp-api:latest}
+    container_name: pc_worker
+    restart: always
+    logging: *default-logging
+    command: ["celery", "-A", "app.core.celery_app.celery_app", "worker", "--loglevel=info"]
+    environment: *api-env
+    volumes:
+      - media:/app/media
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    image: ${API_IMAGE:-ghcr.io/blanq-tech/clean-comp-api:latest}
+    container_name: pc_beat
+    restart: always
+    logging: *default-logging
+    command: ["celery", "-A", "app.core.celery_app.celery_app", "beat", "--loglevel=info"]
+    environment: *api-env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pc_postgres
+    restart: always
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tochka}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD обязателен в production}
+      POSTGRES_DB: ${POSTGRES_DB:-tochka}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # БЕЗ ports: база недоступна снаружи, только внутри сети compose.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tochka}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pc_redis
+    restart: always
+    logging: *default-logging
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    # БЕЗ ports: Redis доступен только сервисам внутри сети.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:
+  media:
+

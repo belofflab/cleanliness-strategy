@@ -1,0 +1,84 @@
+# Лёгкий стек наблюдаемости для «Точки Чистоты»: Loki + Promtail + Grafana + Uptime Kuma.
+# Никакого Elasticsearch/Prometheus/APM — минимальное потребление RAM.
+#
+# Запуск (отдельно от основного стека):
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.monitoring.yml up -d
+# Проверка конфигурации:
+#   docker compose -f deploy/docker-compose.monitoring.yml config
+#
+# Promtail собирает логи ВСЕХ контейнеров через Docker-сокет (имя контейнера → метка),
+# поэтому отдельная общая сеть с приложением для сбора логов не нужна.
+
+services:
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: pc_loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki-data:/loki
+    networks: [monitoring]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  promtail:
+    image: grafana/promtail:3.3.2
+    container_name: pc_promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      # Docker-сокет — для обнаружения контейнеров и чтения их логов.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - promtail-positions:/tmp
+    depends_on:
+      - loki
+    networks: [monitoring]
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: pc_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    # Bind на localhost: наружу не светим (доступ через SSH-туннель или Nginx).
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - loki
+    networks: [monitoring]
+
+  # Аптайм-мониторинг и алертинг в Telegram (настройка через Web UI — см. DEPLOY.md).
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: pc_uptime_kuma
+    restart: unless-stopped
+    volumes:
+      - uptime-kuma-data:/app/data
+    # Bind на localhost: настройка через SSH-туннель (ssh -L 3002:localhost:3002 …).
+    ports:
+      - "127.0.0.1:${UPTIME_KUMA_PORT:-3002}:3001"
+    networks: [monitoring]
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  loki-data:
+  grafana-data:
+  uptime-kuma-data:
+  promtail-positions:

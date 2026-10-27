@@ -1,0 +1,66 @@
+# ==========================================================================
+# PointClean — почтовый стек для mail.blanq.tech
+#   • mailserver  — SMTP/IMAP (docker-mailserver)
+#   • roundcube   — веб-почта (проксируется nginx-ом на mail.blanq.tech)
+#
+# Запуск ТОЛЬКО после выполнения предусловий (см. deploy/mail/SETUP.md):
+#   1) DNS: A mail.blanq.tech -> 5.129.223.184, MX, SPF, DKIM, DMARC, PTR;
+#   2) Разблокированный исходящий порт 25 у хостера (или SMTP-релей);
+#   3) Выпущен SSL-сертификат для mail.blanq.tech.
+#
+#   docker compose -f deploy/docker-compose.mail.yml --env-file deploy/.env up -d
+# ==========================================================================
+
+services:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: pc_mailserver
+    hostname: mail.blanq.tech
+    restart: always
+    env_file:
+      - mail/mailserver.env
+    ports:
+      - "25:25"     # SMTP (входящая почта) — требует разблокировки у хостера
+      - "465:465"   # SMTPS (submission, implicit TLS)
+      - "587:587"   # Submission (STARTTLS)
+      - "143:143"   # IMAP
+      - "993:993"   # IMAPS
+    volumes:
+      - maildata:/var/mail
+      - mailstate:/var/mail-state
+      - maillogs:/var/log/mail
+      - ./mail/config/:/tmp/docker-mailserver/
+      # Сертификаты Let's Encrypt с хоста (выпускает certbot для mail.blanq.tech).
+      - /etc/letsencrypt/:/etc/letsencrypt/:ro
+    cap_add:
+      - NET_ADMIN
+    healthcheck:
+      test: ["CMD-SHELL", "ss -lntp | grep -E ':25|:143' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  roundcube:
+    image: roundcube/roundcubemail:latest
+    container_name: pc_roundcube
+    restart: always
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: tls://mail.blanq.tech
+      ROUNDCUBEMAIL_DEFAULT_PORT: "143"
+      ROUNDCUBEMAIL_SMTP_SERVER: tls://mail.blanq.tech
+      ROUNDCUBEMAIL_SMTP_PORT: "587"
+      ROUNDCUBEMAIL_PLUGINS: "archive,zipdownload"
+      ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE: 25M
+    ports:
+      - "127.0.0.1:8083:80"   # наружу публикует nginx (mail.blanq.tech)
+    depends_on:
+      - mailserver
+    volumes:
+      - roundcube_db:/var/roundcube/db
+
+volumes:
+  maildata:
+  mailstate:
+  maillogs:
+  roundcube_db:
+
