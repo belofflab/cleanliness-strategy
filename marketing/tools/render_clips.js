@@ -8,7 +8,7 @@ const { chromium } = require("playwright");
 
 const FPS = 30;
 const SRC = path.join(__dirname, "..", "video", "src");
-const OUT = path.join(__dirname, "..", "video", "mp4");
+const OUT = path.join(__dirname, "..", "video", "silent");
 
 (async () => {
   const only = process.argv.slice(2).map(Number);

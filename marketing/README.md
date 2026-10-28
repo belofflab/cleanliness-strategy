@@ -18,7 +18,9 @@
 а коннектор Adobe не подключился. Поэтому каждый из 15 клипов сделан в двух видах:
 
 1. **Готовый моушн-клип** (`video/mp4/*.mp4`): анимированная типографика в фирменном стиле, цены, чек-листы,
-   концовка с логотипом. Публикуется сразу; музыку добавьте в редакторе VK Клипов из библиотеки VK.
+   концовка с логотипом. Нежная фоновая музыка уже сведена: три трека синтезированы с нуля (`tools/music.py`),
+   поэтому прав третьих лиц и блокировок по авторским правам нет. Женский голос Yandex SpeechKit (alena)
+   накладывает `tools/voiceover.py`: музыка приглушается под речь, громкость выравнивается под VK.
 2. **ИИ-версия**: для каждого клипа в `video/scripts.md` есть промпт на русском (Шедеврум, Kandinsky) и английском
    (Kling, Runway, Hailuo), текст для озвучки, подпись и хештеги. Сгенерированный фрагмент монтируется с концовкой
    из моушн-клипа.
@@ -35,13 +37,23 @@
 ## Пересборка
 
 ```bash
-pip install fonttools brotli uharfbuzz segno     # Playwright + Chromium и ffmpeg — для PNG, PDF и MP4
+pip install fonttools brotli uharfbuzz segno numpy scipy  # Playwright + Chromium и ffmpeg — для PNG, PDF и MP4
 python3 marketing/tools/build_brand.py           # логотипы
 python3 marketing/tools/build_apparel.py         # печатные файлы формы
 python3 marketing/tools/build_techsheet.py       # техзадание для типографии
 python3 marketing/tools/build_vk.py              # оформление VK
 python3 marketing/tools/build_clips.py           # HTML-сцены клипов и video/scripts.md
-node marketing/tools/render_clips.js             # MP4 (≈ 1,5 мин на клип); можно номера: render_clips.js 1 7
+node marketing/tools/render_clips.js             # немые MP4 в video/silent (≈ 1,5 мин на клип); можно номера: 1 7
+python3 marketing/tools/music.py                 # фоновая музыка audio/music/*.wav
+python3 marketing/tools/voiceover.py --music-only  # итоговые video/mp4 с музыкой, без голоса
+
+export YANDEX_SPEECHKIT_API_KEY=...              # ключ сервисного аккаунта: только в окружении, не в репозитории
+export YANDEX_FOLDER_ID=...                      # каталог Yandex Cloud
+python3 marketing/tools/voiceover.py             # голос + музыка; можно номера: voiceover.py 1 7
 ```
+
+Голос можно сменить переменной `SPEECHKIT_VOICE` (женские голоса API v1: alena, jane, marina),
+эмоцию — `SPEECHKIT_EMOTION`. Синтезированная речь кэшируется в `audio/voice/`; чтобы пересинтезировать клип,
+удалите его файл. Запись голоса менеджера кладите туда же под именем `NN-slug.ogg` — ключ для неё не нужен.
 
 Тексты клипов и сценариев — в одном файле `tools/clips_data.py`. Цвета и геометрия логотипа — `tools/brandkit.py`.
