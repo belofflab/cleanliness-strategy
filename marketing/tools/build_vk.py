@@ -100,69 +100,78 @@ asset("cover-desktop_1920x768", 1920, 768, "fresh", f"""
   <div style="display:flex;gap:14px">{chips(TRUST[1:])}</div>
 </div>""")
 
-# 2. Живая обложка для приложения: 5 кадров 1080×1920. Заголовок — в верхней половине (y 220–700): на странице
-#    сообщества низ кадра закрывают аватар, название и кнопки; целиком кадр виден, когда обложку открывают.
+# 2. Живая обложка для приложения: 5 кадров 1080×1920. Приложение растягивает кадр на высоту экрана, и на свёрнутой
+#    странице сообщества видна только полоса x 110–970, y 430–1510: сверху её закрывают статус-бар и кнопки (до y 650),
+#    снизу — аватар, название и кнопки (от y 1070). Поэтому главный текст — только в полосе LIVE_SAFE (y 660–1040).
+#    Выше y 430 и ниже y 1520 — то, что видно, лишь когда обложку открывают на весь экран: логотип и иллюстрации.
+LIVE_SAFE = "position:absolute;left:160px;right:160px;top:660px;height:380px;display:flex;flex-direction:column;" \
+            "justify-content:center;align-items:center;gap:24px;text-align:center"
+LIVE_TOP = "position:absolute;left:0;right:0;top:200px;display:flex;justify-content:center"
+LIVE_BOTTOM = "position:absolute;left:0;right:0;top:1530px;display:flex;justify-content:center;align-items:flex-end;gap:40px"
 LIVE_SCENE = ('<ellipse cx="380" cy="560" rx="360" ry="34" fill="#DDF0FC"/>'
               + I.window(210, 20, 240, 280) + I.plant(480, 280, 1.3) + I.bucket(50, 350, 1.4) + I.spray(290, 310, 1.3)
               + I.sponge(400, 486, .95) + I.bubble(40, 320, 24) + I.bubble(96, 290, 14) + I.bubble(700, 220, 18)
               + I.sparkle(170, 110, 22, I.SKY) + I.sparkle(640, 70, 15, I.SUN))
 asset("live-cover-1_1080x1920", 1080, 1920, "fresh", f"""
-<div class="glow" style="left:40px;top:560px;width:1000px;height:1000px"></div>
-<div style="position:absolute;left:60px;right:60px;top:220px;display:flex;flex-direction:column;align-items:center;gap:44px;text-align:center">
-  {logo("color", kind="stacked", width=300, descriptor="клининговая служба", gid="l1")}
-  <h1 style="font-size:96px">Чистая квартира<br><em>без сюрпризов</em></h1>
+<div class="glow" style="left:90px;top:420px;width:900px;height:900px"></div>
+<div style="{LIVE_TOP}">{logo("color", kind="stacked", width=260, descriptor="клининговая служба", gid="l1")}</div>
+<div style="{LIVE_SAFE}">
+  <h1 style="font-size:88px">Чистая квартира<br><em>без сюрпризов</em></h1>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">{chips(TRUST[:2], 30, "14px 24px")}</div>
 </div>
-{art(760, 620, LIVE_SCENE, 160, 700)}
-<div style="position:absolute;left:60px;right:60px;top:1340px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center">{chips(TRUST[:2], 30, "14px 24px")}</div>
+{art(760, 620, LIVE_SCENE, 160, 1290, "opacity:.9")}
 """)
 
-PRICE_ROWS = [(I.sponge(14, 40, 1.1), "Поддерживающая", "от 2 400 ₽", "2-комн. — 3 900 ₽"),
-              (I.spray(34, 6, .78), "Генеральная", "от 4 900 ₽", "2-комн. — 10 600 ₽"),
-              (I.roller(20, 14, .78), "После ремонта", "от 6 200 ₽", "2-комн. — 13 700 ₽")]
-rows = "".join(f"""<div class="card">{I.svg(150, 150, ill, "flex:none")}
-  <div style="flex:1"><div style="font-size:44px;font-weight:800">{t}</div><div style="font-size:30px;font-weight:500;opacity:.75;margin-top:6px">{n}</div></div>
-  <div style="font-size:46px;font-weight:800;color:#38BDF8;white-space:nowrap">{p}</div></div>""" for ill, t, p, n in PRICE_ROWS)
+PRICE_ROWS = [("Поддерживающая", "от 2 400 ₽"), ("Генеральная", "от 4 900 ₽"), ("После ремонта", "от 6 200 ₽")]
+rows = "".join(f'<div class="row"><span>{t}</span><b>{p}</b></div>' for t, p in PRICE_ROWS)
 asset("live-cover-2_1080x1920", 1080, 1920, "navy", f"""
-<div style="position:absolute;left:80px;right:80px;top:270px;display:flex;flex-direction:column;gap:34px">
-  {logo(width=360, gid="l2")}
-  <div class="kicker" style="font-size:30px;margin-top:30px">Тюмень · цены 2026</div>
-  <h1 style="font-size:96px">Цена известна<br><em>до выезда</em></h1>
-  <div style="display:flex;flex-direction:column;gap:22px;margin-top:10px">{rows}</div>
-  <div style="font-size:30px;font-weight:500;opacity:.8">Мытьё окон — 350 ₽ за створку · химчистка мебели — 1 500 ₽ за предмет</div>
-</div>""", ".card{display:flex;align-items:center;gap:28px;padding:22px 34px 22px 18px;border-radius:36px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.14)}")
+<div style="{LIVE_TOP}">{logo(width=340, gid="l2")}</div>
+<div style="{LIVE_SAFE};gap:22px">
+  <h1 style="font-size:72px">Цена известна<br><em>до выезда</em></h1>
+  <div style="display:flex;flex-direction:column;gap:8px;width:680px">{rows}</div>
+</div>
+<div style="{LIVE_BOTTOM};flex-direction:column;align-items:center;gap:18px;text-align:center">
+  <div style="font-size:30px;font-weight:500;opacity:.85">2-комн.: поддерживающая — 3 900 ₽, генеральная — 10 600 ₽,<br>после ремонта — 13 700 ₽</div>
+  <div style="font-size:30px;font-weight:500;opacity:.85">Окна — 350 ₽ за створку · химчистка — 1 500 ₽ за предмет</div>
+</div>""", ".row{display:flex;justify-content:space-between;align-items:baseline;font-size:34px;font-weight:700;"
+           "padding:9px 26px;border-radius:24px;background:rgba(255,255,255,.08)}.row b{color:#38BDF8;font-weight:800}")
 
-STEPS = [(I.stopwatch(12, 2, .95), "Напишите нам", "Ответим за 7 минут с точной ценой"),
-         (I.bucket(2, 26, .95), "Приедем вовремя", "В 2-часовое окно, со своими средствами"),
-         (I.phone_report(30, 4, .76), "Примите работу", "По фото и чек-листу — оплата после")]
-steps = "".join(f"""<div class="step">{I.svg(150, 160, ill, "flex:none")}<div><div class="num">{i + 1}</div>
-  <div style="font-size:48px;font-weight:800">{t}</div><div style="font-size:32px;font-weight:500;color:#334155;margin-top:8px">{d}</div></div></div>"""
-                for i, (ill, t, d) in enumerate(STEPS))
+STEPS = [("Напишите", "цена за 7 минут"), ("Приедем", "в 2-часовое окно"), ("Примите работу", "оплата после")]
+steps = "".join(f'<div class="step"><span class="num">{i + 1}</span><span><b>{t}</b> — {d}</span></div>'
+                for i, (t, d) in enumerate(STEPS))
 asset("live-cover-3_1080x1920", 1080, 1920, "fresh", f"""
-<div style="position:absolute;left:80px;right:80px;top:270px;display:flex;flex-direction:column;gap:34px">
-  {logo("color", width=360, gid="l3")}
-  <div class="kicker" style="font-size:30px;margin-top:30px;color:#0369A1">Как мы работаем</div>
-  <h1 style="font-size:96px">Три шага<br>до <em>чистоты</em></h1>
-  <div style="display:flex;flex-direction:column;gap:26px;margin-top:10px">{steps}</div>
-</div>""", ".step{display:flex;align-items:center;gap:30px;padding:24px 30px;border-radius:36px;background:#fff;border:2px solid #DCEBF6;box-shadow:0 18px 40px rgba(3,105,161,.08)}"
-           ".num{display:inline-block;font-size:24px;font-weight:800;color:#fff;background:#0EA5E9;border-radius:999px;padding:4px 16px;margin-bottom:10px}")
+<div class="glow" style="left:90px;top:420px;width:900px;height:900px"></div>
+<div style="{LIVE_TOP}">{logo("color", width=340, gid="l3")}</div>
+<div style="{LIVE_SAFE};gap:22px">
+  <h1 style="font-size:72px">Три шага до <em>чистоты</em></h1>
+  <div style="display:flex;flex-direction:column;gap:10px;width:720px">{steps}</div>
+</div>
+<div style="{LIVE_BOTTOM}">{I.svg(170, 180, I.stopwatch(12, 2, 1.05), "flex:none")}{I.svg(170, 180, I.bucket(2, 30, 1.05), "flex:none")}{I.svg(170, 180, I.phone_report(34, 4, .84), "flex:none")}</div>
+""", ".step{display:flex;align-items:center;gap:20px;font-size:34px;font-weight:500;color:#334155;text-align:left;"
+     "padding:10px 22px;border-radius:24px;background:#fff;border:2px solid #DCEBF6}.step b{color:#0F172A;font-weight:800}"
+     ".num{flex:none;width:46px;height:46px;border-radius:50%;background:#0EA5E9;color:#fff;font-weight:800;font-size:28px;"
+     "display:flex;align-items:center;justify-content:center}")
 
 asset("live-cover-4_1080x1920", 1080, 1920, "sky", f"""
-<div class="glow" style="left:90px;top:360px;width:900px;height:900px;opacity:.35"></div>
-<div style="position:absolute;left:80px;right:80px;top:270px;display:flex;flex-direction:column;gap:34px;align-items:center;text-align:center">
-  {logo("1c-white", width=360, gid="l4")}
-  {I.svg(420, 470, I.shield(40, 20, 2.6) + I.sparkle(30, 380, 16) + I.sparkle(400, 300, 10), "margin-top:30px")}
-  <h1 style="font-size:88px">Не понравилось —<br><span style="color:#0B2A4A">переуберём бесплатно</span></h1>
-  <div style="font-size:38px;font-weight:700">в течение 24 часов после уборки</div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">{chips(["Фотоотчёт до и после", "Работаем по чек-листу"], 30, "14px 24px")}</div>
-</div>""")
+<div class="glow" style="left:90px;top:420px;width:900px;height:900px;opacity:.35"></div>
+<div style="{LIVE_TOP}">{logo("1c-white", width=340, gid="l4")}</div>
+<div style="{LIVE_SAFE}">
+  <h1 style="font-size:76px">Не понравилось —<br><span style="color:#0B2A4A">переуберём бесплатно</span></h1>
+  <div style="font-size:36px;font-weight:700">в течение 24 часов после уборки</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">{chips(["Фотоотчёт до и после", "Работаем по чек-листу"], 28, "12px 22px")}</div>
+</div>
+<div style="{LIVE_BOTTOM}">{I.svg(260, 290, I.shield(25, 12, 1.6) + I.sparkle(20, 240, 12) + I.sparkle(240, 180, 8), "flex:none")}</div>
+""")
 
 asset("live-cover-5_1080x1920", 1080, 1920, "navy", f"""
-<div style="position:absolute;left:80px;right:80px;top:270px;display:flex;flex-direction:column;gap:34px;align-items:center;text-align:center">
-  {logo(width=360, gid="l5")}
-  {I.svg(380, 420, I.stopwatch(20, 10, 2.45) + I.sparkle(350, 60, 16, I.SUN) + I.sparkle(20, 330, 10, I.PALE), "margin-top:40px")}
-  <h1 style="font-size:100px">Расчёт<br><em>за 7 минут</em></h1>
-  <div style="font-size:38px;font-weight:500;line-height:1.35;opacity:.9">Нажмите «Написать» и пришлите<br>площадь и тип уборки</div>
-  <span class="pill" style="font-size:40px;padding:22px 44px">tyumen.cleanliness.pro</span>
+<div style="{LIVE_TOP}">{logo(width=340, gid="l5")}</div>
+<div style="{LIVE_SAFE}">
+  <h1 style="font-size:92px">Расчёт<br><em>за 7 минут</em></h1>
+  <div style="font-size:36px;font-weight:500;line-height:1.35;opacity:.9">Нажмите «Сообщения» и пришлите<br>площадь и тип уборки</div>
+</div>
+<div style="{LIVE_BOTTOM};flex-direction:column;align-items:center;gap:30px">
+  {I.svg(230, 250, I.stopwatch(12, 6, 1.5) + I.sparkle(210, 40, 12, I.SUN), "flex:none")}
+  <span class="pill" style="font-size:34px;padding:18px 38px">tyumen.cleanliness.pro</span>
 </div>""")
 
 # 3. Меню сообщества: 6 пунктов 752×512 (вдвое больше минимальных 376×256 — чётко на любых экранах)
@@ -311,7 +320,7 @@ asset("preview-desktop", 1600, 1200, "ui", f"""
 asset("preview-mobile", 1000, 1900, "ui", f"""
 <div style="position:absolute;left:110px;top:40px;width:780px;height:1820px;border-radius:64px;background:#fff;overflow:hidden;
   box-shadow:0 30px 80px rgba(15,23,42,.18);border:14px solid #0F172A">
-  <div style="height:860px;overflow:hidden;position:relative">{img("live-cover-1_1080x1920", "width:752px;margin-top:-60px")}
+  <div style="height:940px;overflow:hidden;position:relative">{img("live-cover-1_1080x1920", "width:939px;margin:-375px 0 0 -95px")}
     <div style="position:absolute;left:0;right:0;bottom:0;height:240px;background:linear-gradient(rgba(255,255,255,0),#fff)"></div></div>
   <div style="padding:0 36px;position:relative;margin-top:-90px">
     <img src="file://{AVATAR}" style="width:150px;height:150px;border-radius:50%;border:6px solid #fff">
