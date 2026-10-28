@@ -1,0 +1,68 @@
+[
+ {
+  "file": "tshirt-chest_color_light_90x19mm",
+  "width_mm": 90,
+  "height_mm": 19,
+  "purpose": "Футболка/свитшот, грудь слева. DTF, светлая ткань"
+ },
+ {
+  "file": "tshirt-chest_white_dark_90x19mm",
+  "width_mm": 90,
+  "height_mm": 19,
+  "purpose": "Футболка/свитшот, грудь слева. Шелкография/DTF, тёмная ткань"
+ },
+ {
+  "file": "tshirt-back_color_light_260x348mm",
+  "width_mm": 260,
+  "height_mm": 348,
+  "purpose": "Футболка/худи, спина с QR. DTF, светлая ткань"
+ },
+ {
+  "file": "tshirt-back_white_dark_260x348mm",
+  "width_mm": 260,
+  "height_mm": 348,
+  "purpose": "Футболка/худи/куртка, спина с QR. Шелкография/DTF, тёмная ткань"
+ },
+ {
+  "file": "tshirt-back-noqr_white_dark_240x181mm",
+  "width_mm": 240,
+  "height_mm": 181,
+  "purpose": "Спина без QR (для любого города)"
+ },
+ {
+  "file": "polo-embroidery_white_dark_80x17mm",
+  "width_mm": 80,
+  "height_mm": 17,
+  "purpose": "Поло, вышивка грудь слева, нить белая"
+ },
+ {
+  "file": "polo-embroidery_blue_light_80x17mm",
+  "width_mm": 80,
+  "height_mm": 17,
+  "purpose": "Поло, вышивка грудь слева, нить синяя"
+ },
+ {
+  "file": "cap-front_white_dark_50x50mm",
+  "width_mm": 50,
+  "height_mm": 50,
+  "purpose": "Кепка, перед. Вышивка белым"
+ },
+ {
+  "file": "sleeve_white_dark_70x70mm",
+  "width_mm": 70,
+  "height_mm": 70,
+  "purpose": "Рукав. Шелкография/DTF белым"
+ },
+ {
+  "file": "apron-chest_white_dark_170x112mm",
+  "width_mm": 170,
+  "height_mm": 112,
+  "purpose": "Фартук, грудь. Шелкография белым"
+ },
+ {
+  "file": "apron-chest_color_light_170x112mm",
+  "width_mm": 170,
+  "height_mm": 112,
+  "purpose": "Фартук светлый, грудь. DTF"
+ }
+]
