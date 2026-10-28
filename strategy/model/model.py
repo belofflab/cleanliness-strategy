@@ -110,7 +110,7 @@ def prelaunch_total():
     return sum(x for _, x in A.PRELAUNCH_ITEMS)
 
 
-# --- Текущий прайс проекта (сиды) ------------------------------------------------
+# --- Прежний прайс проекта (сиды до обновления) ------------------------------------
 
 def current_tariffs():
     o = A.CURRENT_OBJECT
@@ -130,7 +130,7 @@ def _cm(price, labor, chem, amort, logistics, reserve_rate):
 
 
 def current_units():
-    """Юнит-экономика A и B на текущем прайсе сайта в двух режимах оплаты клинеров:
+    """Юнит-экономика A и B на прежнем прайсе сайта в двух режимах оплаты клинеров:
     share — та же доля от чека (клинер получает меньше в час),
     market — та же оплата в рублях, что в рекомендуемой модели (рыночная ставка за час)."""
     ct = current_tariffs()
@@ -156,7 +156,7 @@ def current_units():
 
 
 def current_price_scenario(mode, code="R"):
-    """Прогон сценария на текущем прайсе: подменяем цены (и долю ФОТ в режиме market)."""
+    """Прогон сценария на прежнем прайсе: подменяем цены (и долю ФОТ в режиме market)."""
     import copy
     saved_a, saved_b = copy.deepcopy(A.UNIT_A), copy.deepcopy(A.UNIT_B)
     cu = current_units()

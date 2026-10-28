@@ -110,7 +110,7 @@ def sheet_readme(book):
         "   Жёлтая заливка — ключевые допущения, сильнее всего влияющие на результат.",
         "2. Листы «Юнит-экономика», «ОПиУ_*» и «Сводка» считаются формулами автоматически.",
         "3. Сценарии отличаются только объёмами, оттоком и CAC (лист «Сценарии»); цены и затраты на заказ общие.",
-        "4. Модель считается на РЕКОМЕНДУЕМОМ прайсе. Текущий прайс сайта (сиды) — для сравнения на листе «Юнит-экономика».",
+        "4. Модель считается на РЕКОМЕНДУЕМОМ прайсе. Прежний прайс сайта (сиды до обновления) — для сравнения на листе «Юнит-экономика».",
         "",
         "Цветовая легенда:",
         "   синий шрифт — ввод; чёрный — формула; зелёный — ссылка на другой лист; жёлтая заливка — ключевое допущение.",
@@ -204,14 +204,14 @@ def sheet_assumptions(book):
     put("b2b_value", "Сумма договора", A.B2B["contract_value"][0], "₽/мес", A.B2B["contract_value"][1], RUB)
     put("b2b_direct_share", "Прямые затраты", A.B2B["direct_share"][0], "% выручки", A.B2B["direct_share"][1], PCT)
 
-    section(ws, r, "Текущий прайс Тюмени из проекта (services/api/app/seed.py) — для сравнения"); r += 1
+    section(ws, r, "Прежний прайс Тюмени (seed.py на ревизии 0be802d) — для сравнения"); r += 1
     put("cur_rooms", "Типовой объект: комнат", A.CURRENT_OBJECT["rooms"], "шт", "Тариф = база + комнаты × ставка + санузлы × ставка", "0")
     put("cur_baths", "Типовой объект: санузлов", A.CURRENT_OBJECT["bathrooms"], "шт", "", "0")
     tnames = {"maintenance": ("maint", "Поддерживающая"), "general": ("gen", "Генеральная"),
               "post_renovation": ("post", "После ремонта")}
     for t, (base, room, bath, mb, mr, mbath) in A.CURRENT_TARIFFS.items():
         code, label = tnames[t]
-        put(f"cur_{code}_base", f"{label}: база", base, "₽", "Сиды проекта, город tyumen", RUB)
+        put(f"cur_{code}_base", f"{label}: база", base, "₽", "Сиды проекта до обновления, город tyumen", RUB)
         put(f"cur_{code}_room", f"{label}: за комнату", room, "₽", "", RUB)
         put(f"cur_{code}_bath", f"{label}: за санузел", bath, "₽", "", RUB)
         put(f"cur_{code}_min", f"{label}: норма времени на объект", mb + A.CURRENT_OBJECT["rooms"] * mr + A.CURRENT_OBJECT["bathrooms"] * mbath, "мин", "minutes_base + комнаты × мин + санузлы × мин (из сидов)", "0")
@@ -399,7 +399,7 @@ def sheet_units(book):
         r += 1
     r += 1
 
-    header_row(ws, r, ["Текущий прайс сайта vs рекомендуемый (2-комн., 1 санузел)", "Текущий: доля ФОТ как в модели", "Текущий: рыночная ставка клинера", "Рекомендуемый прайс"]); r += 1
+    header_row(ws, r, ["Прежний прайс сайта vs рекомендуемый (2-комн., 1 санузел)", "Прежний: доля ФОТ как в модели", "Прежний: рыночная ставка клинера", "Рекомендуемый прайс"]); r += 1
     cur_gen = "(cur_gen_base+cur_rooms*cur_gen_room+cur_baths*cur_gen_bath)"
     cur_post = "(cur_post_base+cur_rooms*cur_post_room+cur_baths*cur_post_bath)"
     cur_maint = "(cur_maint_base+cur_rooms*cur_maint_room+cur_baths*cur_maint_bath)"
@@ -711,12 +711,12 @@ def write_markdown():
             f"- Резерв (пессимистичный разрыв × {A.RESERVE_SAFETY[0]}): {fmt_rub(sc['reserve'])} ₽",
             f"- **Итого рекомендуемый порог входа: {fmt_rub(sc['total'])} ₽**", ""]
     cu = M.current_units()
-    out += ["## Текущий прайс сайта (сиды) — реалистичный сценарий", "",
+    out += ["## Прежний прайс сайта (сиды до обновления) — реалистичный сценарий", "",
             "| Вариант | Окупаемость, мес | Прибыль за 12 мес, ₽ | Прибыль за 24 мес, ₽ | Макс. разрыв, ₽ |",
             "|---|---:|---:|---:|---:|"]
     base = sms["R"]
     out.append(f"| Рекомендуемый прайс (база модели) | {base['payback_month']} | {fmt_rub(base['profit_12'])} | {fmt_rub(base['profit_24'])} | {fmt_rub(base['max_gap'])} |")
-    for mode, label in (("share", "Текущий прайс, ФОТ той же долей чека"), ("market", "Текущий прайс, рыночная ставка клинера")):
+    for mode, label in (("share", "Прежний прайс, ФОТ той же долей чека"), ("market", "Прежний прайс, рыночная ставка клинера")):
         sm = M.current_price_scenario(mode)
         pb = sm["payback_month"] if sm["payback_month"] else "> 24"
         out.append(f"| {label} | {pb} | {fmt_rub(sm['profit_12'])} | {fmt_rub(sm['profit_24'])} | {fmt_rub(sm['max_gap'])} |")
