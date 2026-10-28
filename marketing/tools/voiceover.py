@@ -41,6 +41,8 @@ MUSIC = os.path.join(BASE, "audio", "music")
 TTS_URL = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize"
 LEAD = 0.35   # с: фраза вступает после появления заголовка сцены
 GAP = 0.45    # с: пауза между концом фразы и сменой сцены
+VOICE_GAIN = 2.0    # +6 дБ: речь после компрессора ≈ −19 дБ
+MUSIC_GAIN = 0.25   # фон ≈ −27 дБ: в паузах на 8 дБ тише голоса, под речью приглушается ещё на ~6 дБ
 
 MUSIC_BY_RUBRIC = {"Цены без сюрпризов": "morning", "Как мы работаем": "morning", "Лайфхак клинера": "fresh",
                    "Новостройки Тюмени": "cozy", "Акции": "cozy", "Знакомство": "morning"}
@@ -131,8 +133,9 @@ def mix(clip, voiced=None, timing=None):
                          for i, (t0, _) in enumerate(timing["scenes"]))
         labels = "".join(f"[p{i}]" for i in range(len(voiced)))
         graph = (f"{delays}{labels}amix=inputs={len(voiced)}:duration=longest:normalize=0,highpass=f=80,"
-                 f"acompressor=threshold=0.1:ratio=3:attack=5:release=120,apad=whole_dur={total:.3f},asplit=2[v1][v2];"
-                 f"{music_chain},volume=0.55[m];[m][v1]sidechaincompress=threshold=0.02:ratio=10:attack=15:release=400[md];"
+                 f"acompressor=threshold=0.1:ratio=3:attack=5:release=120,volume={VOICE_GAIN},"
+                 f"apad=whole_dur={total:.3f},asplit=2[v1][v2];{music_chain},volume={MUSIC_GAIN}[m];"
+                 f"[m][v1]sidechaincompress=threshold=0.04:ratio=3:attack=20:release=350[md];"
                  f"[md][v2]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]")
     else:
         graph = f"{music_chain},loudnorm=I=-16:TP=-1.5:LRA=11[a]"
