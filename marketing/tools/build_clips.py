@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import html
+import json
 import os
 import re
 import sys
@@ -19,6 +20,7 @@ from clips_data import CLIPS, END_CTA  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "video"))
 SRC = os.path.join(ROOT, "src")
+TIMING = os.path.join(ROOT, "timing.json")  # тайминг сцен под озвучку, пишет voiceover.py
 
 THEMES = {
     "navy": {"bg": "#0B2A4A", "ink": "#FFFFFF", "muted": "#B6C3D3", "accent": "#38BDF8", "card": "rgba(255,255,255,.08)",
@@ -173,24 +175,25 @@ def clip_html(c) -> str:
             f'<div class="stage">{"".join(scenes)}</div>{end}</body></html>\n')
 
 
-def scripts_md() -> str:
+def scripts_md(clips) -> str:
     out = ["# 15 клипов для VK: сценарии, промпты для ИИ-видео, подписи", "",
            "Каждый клип есть в двух видах:", "",
            "1. **Готовый моушн-клип** `mp4/NN-slug.mp4` (1080×1920, 30 к/с) — можно публиковать сразу.",
            "   Нежная фоновая музыка уже сведена: она синтезирована с нуля (`tools/music.py`), прав третьих лиц нет.",
-           "   Женский голос (Yandex SpeechKit, текст из поля «Голос») накладывает `tools/voiceover.py`.",
+           "   Озвучка — женский голос Yandex SpeechKit (alena), текст в поле «Голос»; сцены растянуты под речь (`tools/voiceover.py`).",
            "2. **ИИ-версия** — промпт ниже для генератора видео (Шедеврум или Kandinsky — по-русски; Kling, Runway, Hailuo — по-английски).",
            "   Сгенерированный ролик 5–10 с монтируйте с концовкой из моушн-клипа (последние 3 с — логотип и призыв).",
            "",
-           "Голос можно и записать — менеджером: положите файл `audio/voice/NN-slug.ogg` и запустите `voiceover.py`.",
+           "Голос можно и записать — менеджером: крючок в `audio/voice/NN-slug.1.ogg`, остальное в `NN-slug.2.ogg`,",
+           "затем запустите `voiceover.py`. Сцены растягиваются под длину речи.",
            "В ИИ-кадрах не показывайте лица реальных клиентов и чужие логотипы; форма в промптах — тёмно-синяя с логотипом-каплей.",
            ""]
-    for c in CLIPS:
+    for c in clips:
         headline = re.sub(r"[\[\]]", "", c["scenes"][0][2][-1][1])
         out += [f"## {c['id']:02d}. {c['rubric']}: {headline}", "",
-                f"- **Файл:** `mp4/{c['id']:02d}-{c['slug']}.mp4` · {c['duration']} с · когда публиковать: {c['publish']}",
+                f"- **Файл:** `mp4/{c['id']:02d}-{c['slug']}.mp4` · {round(c['duration'])} с · когда публиковать: {c['publish']}",
                 f"- **Крючок (первые 2 секунды):** {c['hook']}",
-                f"- **Голос:** {c['voiceover']}",
+                f"- **Голос:** {c['voiceover'].replace('| ', '')}",
                 f"- **Подпись в VK:** {c['caption']}",
                 f"- **Хештеги:** {c['tags']} #точкачистоты",
                 "- **Текст в кадре:**"]
@@ -212,15 +215,34 @@ def scripts_md() -> str:
     return "\n".join(out)
 
 
+def load_timing() -> dict:
+    try:
+        with open(TIMING, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def timed(c, timing):
+    """Клип со сценами, растянутыми под озвучку, если для него есть тайминг."""
+    t = timing.get(str(c["id"]))
+    if not t:
+        return c
+    scenes = [(t0, t1, blocks) for (t0, t1), (_, _, blocks) in zip(t["scenes"], c["scenes"])]
+    return {**c, "scenes": scenes, "duration": t["duration"]}
+
+
 def build():
     os.makedirs(SRC, exist_ok=True)
     with open(os.path.join(SRC, "clip.css"), "w", encoding="utf-8") as f:
         f.write(CSS)
-    for c in CLIPS:
+    timing = load_timing()
+    clips = [timed(c, timing) for c in CLIPS]
+    for c in clips:
         with open(os.path.join(SRC, f"{c['id']:02d}-{c['slug']}.html"), "w", encoding="utf-8") as f:
             f.write(clip_html(c))
     with open(os.path.join(ROOT, "scripts.md"), "w", encoding="utf-8") as f:
-        f.write(scripts_md())
+        f.write(scripts_md(clips))
     print(f"{len(CLIPS)} клипов → {SRC}")
 
 
