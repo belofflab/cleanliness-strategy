@@ -64,5 +64,65 @@
   "width_mm": 170,
   "height_mm": 112,
   "purpose": "Фартук светлый, грудь. DTF"
+ },
+ {
+  "file": "back-slogan-tochka_white_dark_280x160mm",
+  "width_mm": 280,
+  "height_mm": 160,
+  "purpose": "Спина футболки: слоган «Чисто. Точка.» Шелкография белым"
+ },
+ {
+  "file": "back-slogan-dust_white_dark_280x159mm",
+  "width_mm": 280,
+  "height_mm": 159,
+  "purpose": "Спина футболки: слоган «Беру пыль на себя». Шелкография белым"
+ },
+ {
+  "file": "back-slogan-guarantee_white_dark_280x122mm",
+  "width_mm": 280,
+  "height_mm": 122,
+  "purpose": "Спина футболки: гарантия переуборки. Шелкография белым"
+ },
+ {
+  "file": "back-slogan-weekend_white_dark_280x112mm",
+  "width_mm": 280,
+  "height_mm": 112,
+  "purpose": "Спина футболки: слоган «Ваш выходной — моя работа». Шелкография белым"
+ },
+ {
+  "file": "chevron-certified_full_90x40mm",
+  "width_mm": 90,
+  "height_mm": 40,
+  "purpose": "Шеврон на левый рукав, грейд «Клинер» (после аттестации). Тканый, на липучке"
+ },
+ {
+  "file": "chevron-senior_full_90x40mm",
+  "width_mm": 90,
+  "height_mm": 40,
+  "purpose": "Шеврон на левый рукав, грейд «Старший клинер». Тканый, на липучке"
+ },
+ {
+  "file": "chevron-lead_full_90x40mm",
+  "width_mm": 90,
+  "height_mm": 40,
+  "purpose": "Шеврон на левый рукав, грейд «Бригадир». Тканый, на липучке"
+ },
+ {
+  "file": "name-patch-sample_full_100x25mm",
+  "width_mm": 100,
+  "height_mm": 25,
+  "purpose": "Нашивка с именем, грудь справа, на липучке. Образец: имя меняется на каждого сотрудника"
+ },
+ {
+  "file": "badge-template_full_86x54mm",
+  "width_mm": 86,
+  "height_mm": 54,
+  "purpose": "Бейдж 86×54 мм на ПВХ-карте, полноцвет. Поля в [скобках] — на каждого сотрудника"
+ },
+ {
+  "file": "reflective-hood_silver_dark_70x70mm",
+  "width_mm": 70,
+  "height_mm": 70,
+  "purpose": "Капюшон худи / спина жилета: знак световозвращающей термоплёнкой (серебро)"
  }
 ]

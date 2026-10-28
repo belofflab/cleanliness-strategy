@@ -17,6 +17,12 @@ TEE_BACK = "M300 20 Q380 50 460 20 L560 30 L760 170 L700 270 L640 240 L640 720 L
 POLO = TEE_FRONT + " M380 66 V190"
 APRON = "M250 0 H510 V40 Q510 120 600 140 V760 H160 V140 Q250 120 250 40 Z"
 CAP = "M40 260 Q40 40 230 30 Q420 40 420 260 Z M20 260 H440 Q470 300 380 320 H80 Q-10 300 20 260 Z"
+HOODIE_BACK = ("M250 60 Q240 -40 380 -50 Q520 -40 510 60 Q380 100 250 60 Z "
+               "M250 60 Q380 92 510 60 L600 80 L760 430 L690 452 L600 270 L600 760 L160 760 L160 270 L70 452 L0 430 L160 80 Z")
+SLEEVE = "M70 0 H430 L500 600 H0 Z"
+CARD = "M0 0 H86 V54 H0 Z"
+REFLECT = ('<path d="M250 60 L160 80 M510 60 L600 80" stroke="#C3CBD5" stroke-width="9" stroke-linecap="round"/>'
+           '<path d="M0 430 L70 452 M760 430 L690 452" stroke="#C3CBD5" stroke-width="9" stroke-linecap="round"/>')
 
 
 def files():
@@ -24,16 +30,16 @@ def files():
         return {x["file"].rsplit("_", 1)[0]: x for x in json.load(f)}
 
 
-def garment(view_w, view_h, outline, fill, placements, caption, note):
-    """Схема изделия в мм: силуэт + принт в точном размере + размерные подписи."""
+def garment(view_w, view_h, outline, fill, placements, caption, note, extra="", top=-40):
+    """Схема изделия в мм: силуэт + принт в точном размере + размерные подписи; extra — швы и кант поверх."""
     imgs = []
     for p in placements:
         imgs.append(f'<image href="preview/{p["file"]}.png" x="{p["x"]}" y="{p["y"]}" width="{p["w"]}" height="{p["h"]}"/>'
                     f'<rect x="{p["x"]}" y="{p["y"]}" width="{p["w"]}" height="{p["h"]}" fill="none" stroke="#E11D48" stroke-width="2" stroke-dasharray="8 6"/>'
                     f'<text x="{p["x"] + p["w"] / 2}" y="{p["y"] + p["h"] + 26}" text-anchor="middle" class="dim">{p["w"]:.0f} × {p["h"]:.0f} мм</text>'
                     + (f'<text x="{p["x"] + p["w"] / 2}" y="{p["y"] - 10}" text-anchor="middle" class="dim">{p["label"]}</text>' if p.get("label") else ""))
-    return (f'<figure><svg viewBox="-20 -40 {view_w + 40} {view_h + 80}">'
-            f'<path d="{outline}" fill="{fill}" stroke="#94A3B8" stroke-width="3"/>{"".join(imgs)}</svg>'
+    return (f'<figure><svg viewBox="-20 {top} {view_w + 40} {view_h - top + 40}">'
+            f'<path d="{outline}" fill="{fill}" stroke="#94A3B8" stroke-width="3"/>{extra}{"".join(imgs)}</svg>'
             f'<figcaption><b>{caption}</b><span>{note}</span></figcaption></figure>')
 
 
@@ -68,6 +74,31 @@ def build():
                 "Фартук — грудь", "Вертикальный логотип 170 мм, верх — 170 мм от верхнего края."),
     ])
 
+    slogan = F["back-slogan-dust_white_dark"]
+    chev = F["chevron-senior_full"]
+    name = F["name-patch-sample_full"]
+    refl = F["reflective-hood_silver_dark"]
+    qrback = F["tshirt-back_white_dark"]
+    page3 = "".join([
+        garment(760, 720, TEE_BACK, "#0B2A4A", [p("back-slogan-dust_white_dark", 380 - slogan["width_mm"] / 2, 110, "80 мм от воротника")],
+                "Футболка — спина, слоган",
+                "Один из 4 слоганов <code>back-slogan-*</code>, ширина 280 мм (XS–S — 240 мм). Шелкография пластизолем белым."),
+        garment(760, 720, TEE_FRONT, "#0B2A4A",
+                [p("name-patch-sample_full", 280 - name["width_mm"] / 2, 150, "имя, справа"),
+                 p("tshirt-chest_white_dark", 480 - chest["width_mm"] / 2, 150, "логотип, слева")],
+                "Футболка / поло — перед",
+                "Логотип — грудь слева у носящего. Нашивка с именем — грудь справа на липучке (ответная часть пришита)."),
+        garment(500, 600, SLEEVE, "#0B2A4A", [p("chevron-senior_full", 250 - chev["width_mm"] / 2, 100, "100 мм от плеча")],
+                "Левый рукав — шеврон грейда",
+                "Тканый шеврон 90×40 мм на липучке: 1–3 полосы = грейд. Ответная часть липучки 100×50 мм на всех изделиях."),
+        garment(760, 760, HOODIE_BACK, "#0B2A4A",
+                [p("reflective-hood_silver_dark", 380 - refl["width_mm"] / 2, -30, "капюшон"),
+                 {**p("tshirt-back_white_dark", 380 - qrback["width_mm"] * .8 / 2, 160), "w": qrback["width_mm"] * .8, "h": qrback["height_mm"] * .8}],
+                "Худи на молнии — спина",
+                "Знак на капюшоне — световозвращающая термоплёнка 70 мм. Кант 5 мм по плечевым швам и манжетам — светоотражающий, вшивной. Спина — QR-принт.",
+                REFLECT, top=-80),
+    ])
+
     rows = "".join(f'<tr><td><code>{x["file"]}</code></td><td>{x["width_mm"]} × {x["height_mm"]}</td><td>{x["purpose"]}</td></tr>'
                    for x in json.load(open(os.path.join(APPAREL, "files.json"), encoding="utf-8")))
     html = f"""<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
@@ -82,24 +113,28 @@ figure {{ margin: 0; display: grid; gap: 3mm }}
 svg {{ width: 100%; height: auto; max-height: 120mm }}
 .dim {{ font: 600 22px Inter, sans-serif; fill: #E11D48 }}
 figcaption {{ display: grid; gap: 1mm }} figcaption span {{ color: #44546A }}
-table {{ border-collapse: collapse; width: 100% }} td, th {{ border-bottom: 1px solid #DDE6EF; padding: 2.2mm 2mm; text-align: left; vertical-align: top }}
+table {{ border-collapse: collapse; width: 100% }} td, th {{ border-bottom: 1px solid #DDE6EF; padding: 0.9mm 1.6mm; text-align: left; vertical-align: top }}
 th {{ font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #6B7A8F }}
-code {{ font-size: 9.5px }}
+code {{ font-size: 8.5px }}
 .foot {{ color: #5F6B7A; display: flex; justify-content: space-between }}
-.specs {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8mm }}
+.specs {{ display: grid; grid-template-columns: 1.55fr 1fr; gap: 7mm; font-size: 9.5px }}
 .specs ul {{ margin: 0; padding-left: 4mm; display: grid; gap: 1mm }}
 .sw {{ display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; border: 1px solid #0002 }}
 </style></head><body>
 <section class="page"><div><h1>Техзадание на нанесение · <span>Точка Чистоты</span></h1>
-<div class="sub">Лист 1 из 3 · Футболки, свитшоты, худи. Масштаб схем условный, размеры принтов — в мм 1:1 в файлах. Красная рамка — граница принта.</div></div>
+<div class="sub">Лист 1 из 4 · Футболки, свитшоты, худи. Масштаб схем условный, размеры принтов — в мм 1:1 в файлах. Красная рамка — граница принта.</div></div>
 <div class="figs">{page1}</div>
 <div class="foot"><span>Файлы: marketing/apparel/pdf (вектор, текст в кривых) · превью: marketing/apparel/preview</span><span>Цвет ткани на схемах — тёмно-синий (navy)</span></div></section>
 <section class="page"><div><h1>Техзадание на нанесение · <span>Точка Чистоты</span></h1>
-<div class="sub">Лист 2 из 3 · Поло, кепка, фартук</div></div>
+<div class="sub">Лист 2 из 4 · Поло, кепка, фартук</div></div>
 <div class="figs">{page2}</div>
 <div class="foot"><span>Вышивку оцифровывает типография по PDF-файлу (формат DST/EMB)</span><span>Пробный образец перед тиражом обязателен</span></div></section>
 <section class="page"><div><h1>Техзадание на нанесение · <span>Точка Чистоты</span></h1>
-<div class="sub">Лист 3 из 3 · Файлы, цвета, способы нанесения</div></div>
+<div class="sub">Лист 3 из 4 · Слоганы на спину, знаки статуса, светоотражающие элементы. Бейдж 86×54 мм — файл <code>badge-template_full</code>, ПВХ-карта, полноцвет.</div></div>
+<div class="figs">{page3}</div>
+<div class="foot"><span>Шевроны и нашивки — тканые (жаккард), кант мерроу белый, на липучке; цвета: navy, белый, небесный</span><span>Светоотражающее — только на худи, жилетах и куртках</span></div></section>
+<section class="page"><div><h1>Техзадание на нанесение · <span>Точка Чистоты</span></h1>
+<div class="sub">Лист 4 из 4 · Файлы, цвета, способы нанесения</div></div>
 <div class="specs"><div><table><thead><tr><th>Файл</th><th>Размер, мм</th><th>Назначение</th></tr></thead><tbody>{rows}</tbody></table></div>
 <div><h3>Цвета</h3><ul>
 <li><span class="sw" style="background:#FFFFFF"></span>Белый — все одноцветные принты на тёмной ткани</li>
@@ -111,6 +146,8 @@ code {{ font-size: 9.5px }}
 <li><b>DTF / цифровая печать</b> — файлы <code>_color_light</code>: градиент знака сохраняется.</li>
 <li><b>Шелкография</b> — только файлы <code>_white_dark</code> и <code>1c</code>: один цвет, одна сетка.</li>
 <li><b>Вышивка</b> — <code>polo-embroidery</code>, <code>cap-front</code>: без градиента; минимум 70 мм для логотипа и 25 мм для знака.</li>
+<li><b>Тканые шевроны и нашивки</b> — файлы <code>_full</code>: жаккард, кант мерроу, задник — липучка (петли). Имя на нашивке меняется на каждого сотрудника.</li>
+<li><b>Световозвращающая термоплёнка</b> — <code>reflective-*</code>: плоттерная резка, серебро.</li>
 <li><b>QR на спине</b> — печатать без масштабирования ниже 80 мм по стороне QR; на тёмной ткани белая плашка обязательна (модули — вырез).</li>
 <li>Перед тиражом — пробный образец и сверка цвета по веерку Pantone.</li></ul></div></div>
 <div class="foot"><span>Исходники и пересборка: marketing/tools/build_apparel.py, build_techsheet.py</span><span>Контакт для вопросов типографии — менеджер «Точки Чистоты»</span></div></section>
