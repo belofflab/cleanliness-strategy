@@ -36,12 +36,16 @@ async def seed() -> None:
                 "email": "ow@blanq.tech",
                 "price_multiplier": Decimal("1.00"),
                 "services": [
+                    # Тарифы Тюмени откалиброваны под рынок (strategy/docs/02-unit-economics.md):
+                    # 2-комн./1 с/у — поддерживающая 3 900 ₽, генеральная 10 600 ₽,
+                    # после ремонта 13 700 ₽. Только комнаты и санузлы: бронь и конверсия
+                    # лида в CRM площадь в расчёт не передают.
                     dict(
                         type="maintenance",
                         name="Поддерживающая уборка",
-                        base_price="1500",
-                        price_per_room="450",
-                        price_per_bathroom="350",
+                        base_price="1900",
+                        price_per_room="750",
+                        price_per_bathroom="500",
                         minutes_base=60,
                         minutes_per_room=30,
                         minutes_per_bathroom=25,
@@ -49,9 +53,9 @@ async def seed() -> None:
                     dict(
                         type="general",
                         name="Генеральная уборка",
-                        base_price="3500",
-                        price_per_room="900",
-                        price_per_bathroom="700",
+                        base_price="3700",
+                        price_per_room="2850",
+                        price_per_bathroom="1200",
                         minutes_base=120,
                         minutes_per_room=60,
                         minutes_per_bathroom=45,
@@ -59,9 +63,9 @@ async def seed() -> None:
                     dict(
                         type="post_renovation",
                         name="Уборка после ремонта",
-                        base_price="5000",
-                        price_per_room="1300",
-                        price_per_bathroom="1000",
+                        base_price="4700",
+                        price_per_room="3750",
+                        price_per_bathroom="1500",
                         minutes_base=180,
                         minutes_per_room=90,
                         minutes_per_bathroom=60,
