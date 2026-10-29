@@ -57,11 +57,11 @@ def wordmark(x: float, baseline: float, size: float, c1: str, c2: str, weight: i
 
 
 def text(s: str, x: float, baseline: float, size: float, color: str, weight: int = 500, tracking: float = 0.0,
-         anchor: str = "start"):
+         anchor: str = "start", family: str = "manrope"):
     """Произвольная строка в кривых; anchor: start | middle | end."""
-    o = outline(s, weight=weight, size=size, x=0, baseline=baseline, tracking=tracking)
+    o = outline(s, weight=weight, size=size, x=0, baseline=baseline, tracking=tracking, family=family)
     dx = {"start": x, "middle": x - o.width / 2, "end": x - o.width}[anchor]
-    o = outline(s, weight=weight, size=size, x=dx, baseline=baseline, tracking=tracking)
+    o = outline(s, weight=weight, size=size, x=dx, baseline=baseline, tracking=tracking, family=family)
     return f'<path d="{o.d}" fill="{color}"/>', o.width, o.cap_height, o.x_height
 
 
