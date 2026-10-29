@@ -122,6 +122,83 @@ def back_person(name, role, phone):
         + txt("Расчёт цены", qx + qs / 2, qy + qs + 3.2, 2.3, B.MUTED, weight=700, anchor="middle"))
 
 
+# Дерзкие визитки-«перевёртыши»: на лице — провокация, на обороте — развязка и контакты.
+# (ключ, строки лица, строки развязки, подстрочник развязки)
+HOOKS = [
+    ("bold-get-out", ["Убирайтесь"], ["…из дома."], "Вернётесь — будет чисто."),
+    ("bold-drop-rag", ["Положите", "тряпку"], ["…и отойдите", "от раковины."], "Это работа для профессионалов."),
+]
+
+
+def drop_period(x_end, baseline, size, color):
+    """Фирменная капля вместо точки после слова."""
+    s = size * 0.46 / 17.2                       # капля в знаке: x 9.7–22.3, y 5.8–23.0 (единицы 32×32)
+    x = x_end + size * 0.07 - 9.7 * s
+    y = baseline - 23.0 * s
+    return f'<g transform="translate({x:.3f},{y:.3f}) scale({s:.4f})"><path d="{B.DROP}" fill="{color}"/></g>'
+
+
+def bubble(cx, cy, r):
+    """Мыльный пузырь контуром: без прозрачности, чтобы печать не зависела от сведения слоёв."""
+    w = max(0.22, r * 0.09)
+    return (f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{B.SKY_ON_DARK}" stroke-width="{w:.2f}"/>'
+            f'<path d="M{cx - r * .55:.2f},{cy - r * .1:.2f} A{r * .6:.2f},{r * .6:.2f} 0 0 1 {cx - r * .05:.2f},{cy - r * .6:.2f}" '
+            f'fill="none" stroke="#FFFFFF" stroke-width="{w * 1.3:.2f}" stroke-linecap="round"/>')
+
+
+def hook_front(lines):
+    probe = max(B.text(t, 0, 0, 1, B.WHITE, weight=800)[1] for t in lines)
+    size = min(16.0, 70.0 / probe)
+    lh = size * 1.0
+    logo, lw, lh_logo = B.horizontal("color-dark", gid="hf")
+    k = 28 / lw
+    block = size * 0.72 + (len(lines) - 1) * lh          # от верха прописных до последней базовой линии
+    free_bottom = Y1 - lh_logo * k - 3.0                  # над логотипом
+    first = max(BLEED + 8.5 + size * 0.72, Y0 + (free_bottom - Y0 - block) / 2 + size * 0.72)
+    words = ""
+    for i, t in enumerate(lines):
+        base = first + i * lh
+        words += txt(t, X0, base, size, B.WHITE, weight=800)
+        if i == len(lines) - 1:
+            words += drop_period(X0 + B.text(t, X0, base, size, B.WHITE, weight=800)[1], base, size, B.SKY)
+    flip_y = Y1 - 0.6
+    arrow = (f'<path d="M{X1 - 3.4},{flip_y - 2.6} a2.1,2.1 0 1 1 -0.4,3.2" fill="none" stroke="{B.SKY_ON_DARK}" '
+             f'stroke-width="0.35" stroke-linecap="round"/>'
+             f'<path d="M{X1 - 4.4},{flip_y + 0.3} l0.9,0.4 l0.2,-1" fill="none" stroke="{B.SKY_ON_DARK}" stroke-width="0.35" '
+             f'stroke-linecap="round" stroke-linejoin="round"/>')
+    bubbles = "".join(bubble(x, y, r) for x, y, r in ((84.5, 8.4, 4.2), (77.0, 5.4, 1.6), (90.0, 16.4, 1.5)))
+    return doc(
+        f'<rect width="{W}" height="{H}" fill="{B.NAVY}"/>' + bubbles + words
+        + f'<g transform="translate({X0:.3f},{Y1 - lh_logo * k:.3f}) scale({k:.5f})">{logo}</g>'
+        + txt("переверните", X1 - 5.6, flip_y, 2.4, B.SKY_ON_DARK, weight=700, anchor="end") + arrow)
+
+
+def hook_back(lines, sub):
+    qs = 19.0
+    qx, qy = X1 - qs, Y0
+    colw = qx - 3.5 - (X0 + 2.5)
+    probe = max(B.text(t, 0, 0, 1, B.INK, weight=800)[1] for t in lines)
+    size = min(6.4, colw / probe)
+    y = Y0 + size * 0.75
+    out = ""
+    for t in lines:
+        out += txt(t, X0 + 2.5, y, size, B.INK, weight=800)
+        y += size * 1.05
+    out += txt(sub, X0 + 2.5, y + 0.4, 3.0, B.DEEP, weight=700)
+    last = Y1 - 4.3 - 3.9 - 3.0                            # список заканчивается над телефоном с отступом 3 мм
+    for i, p in enumerate(["Цена до выезда", "Оплата после приёмки", "Переуберём за 24 часа"]):
+        yy = last - (2 - i) * 3.7
+        out += check(X0 + 2.5 + 1.0, yy - 0.85, 1.0) + txt(p, X0 + 2.5 + 3.1, yy, 2.45, B.INK)
+    return doc(
+        f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>'
+        f'<rect width="{BLEED + 2.5}" height="{H}" fill="{B.SKY}"/>'
+        + out
+        + txt(PHONE, X0 + 2.5, Y1 - 4.3, 3.9, B.INK, weight=800)
+        + txt(f"{SITE}  ·  {VK}", X0 + 2.5, Y1, 2.3, B.MUTED, weight=600)
+        + qr(QR_URL, qx, qy, qs, B.INK)
+        + txt("Цена за 7 минут", qx + qs / 2, qy + qs + 3.2, 2.3, B.MUTED, weight=700, anchor="middle"))
+
+
 def gs_cmyk(src, dst):
     subprocess.run(["gs", "-q", "-o", dst, "-sDEVICE=pdfwrite", "-sColorConversionStrategy=CMYK",
                     "-sProcessColorModel=DeviceCMYK", "-dPDFSETTINGS=/prepress", "-dCompressPages=false", src], check=True)
@@ -209,6 +286,7 @@ def build():
     os.makedirs(tmp, exist_ok=True)
     cards = [("company", front(), back_company(), "Общая визитка компании")]
     cards += [(f"person-{key}", front(), back_person(name, role, phone), f"Именная: {name}, {role}") for key, name, role, phone in PEOPLE]
+    cards += [(key, hook_front(face), hook_back(punch, sub), f"Дерзкая: «{' '.join(face)}»") for key, face, punch, sub in HOOKS]
     manifest, index = [], []
     for key, f_svg, b_svg, title in cards:
         for side, svg in (("front", f_svg), ("back", b_svg)):
