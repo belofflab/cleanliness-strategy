@@ -1,7 +1,9 @@
-"""Оформление сообщества VK https://vk.ru/cleanliness_tmn: обложка, живая обложка, меню, услуги, посты (PNG).
+"""Оформление сообществ VK «Точки Чистоты»: обложка, живая обложка, меню, услуги, посты (PNG).
 
-    python3 marketing/tools/build_vk.py
-Цены «от» — тарифы Тюмени из services/api/app/seed.py (студия, 1 санузел). Иллюстрации — tools/illustrations.py.
+    python3 marketing/tools/build_vk.py          # Тюмень, https://vk.ru/cleanliness_tmn → vk/design
+    python3 marketing/tools/build_vk.py ufa      # Уфа, https://vk.ru/cleanliness_ufa → vk/ufa/design
+Цены Тюмени — прайс стратегии (студия, 1 санузел), цены Уфы — «от» с сайта ufa.cleanliness.pro
+(тарифы services/api/app/seed.py). Иллюстрации — tools/illustrations.py.
 """
 
 from __future__ import annotations
@@ -16,7 +18,31 @@ import brandkit as B  # noqa: E402
 import illustrations as I  # noqa: E402
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.abspath(os.path.join(TOOLS, "..", "vk", "design"))
+
+CITIES = {
+    "tyumen": dict(
+        out=("vk", "design"), loc="в Тюмени", kicker="Тюмень · цены 2026", site="tyumen.cleanliness.pro",
+        prices=("от 2 400 ₽", "от 4 900 ₽", "от 6 200 ₽"), windows="350 ₽", upholstery="1 500 ₽",
+        maintenance_note="Свой клинер по подписке −15%", menu_prices="Студия — от 2 400 ₽",
+        live_notes=("2-комн.: поддерживающая — 3 900 ₽, генеральная — 10 600 ₽,<br>после ремонта — 13 700 ₽",
+                    "Окна — 350 ₽ за створку · химчистка — 1 500 ₽ за предмет"),
+        price_post=("Уборка после ремонта<br><em>без «от» и сюрпризов</em>",
+                    ("Студия — 6 200 ₽", "1-комнатная — 9 950 ₽", "2-комнатная — 13 700 ₽", "3-комнатная, 2 с/у — 18 950 ₽")),
+        subscription=True, gifts=True, promo=True),
+    "ufa": dict(
+        out=("vk", "ufa", "design"), loc="в Уфе", kicker="Уфа · цены 2026", site="ufa.cleanliness.pro",
+        prices=("от 1 650 ₽", "от 3 750 ₽", "от 5 350 ₽"), windows="380 ₽", upholstery="1 600 ₽",
+        maintenance_note="Свои средства и инвентарь", menu_prices="Уборка — от 1 650 ₽",
+        live_notes=("Окна — 380 ₽ за створку · химчистка — 1 600 ₽ за предмет",
+                    "Офисы — по договору"),
+        price_post=("Цены на уборку<br><em>без сюрпризов</em>",
+                    ("Поддерживающая — от 1 650 ₽", "Генеральная — от 3 750 ₽", "После ремонта — от 5 350 ₽",
+                     "Окна — 380 ₽ за створку")),
+        subscription=False, gifts=False, promo=False),
+}
+CITY_SLUG = sys.argv[1] if len(sys.argv) > 1 else "tyumen"
+C = CITIES[CITY_SLUG]
+OUT = os.path.abspath(os.path.join(TOOLS, "..", *C["out"]))
 FONTS = os.path.abspath(os.path.join(TOOLS, "..", "fonts"))
 
 FONT_CSS = "".join(
@@ -95,7 +121,7 @@ asset("cover-desktop_1920x768", 1920, 768, "fresh", f"""
 {art(820, 700, COVER_SCENE, 1010, 40)}
 <div style="position:absolute;left:300px;top:150px;width:760px;display:flex;flex-direction:column;gap:28px">
   {logo("color", width=400, gid="c1")}
-  <h1 style="font-size:86px">Уборка квартир<br>в Тюмени</h1>
+  <h1 style="font-size:86px">Уборка квартир<br>{C["loc"]}</h1>
   <div style="font-size:36px;font-weight:700;color:#0369A1;margin-top:-6px">Цена до выезда — на месте не меняется</div>
   <div style="display:flex;gap:14px">{chips(TRUST[1:])}</div>
 </div>""")
@@ -122,7 +148,7 @@ asset("live-cover-1_1080x1920", 1080, 1920, "fresh", f"""
 {art(760, 620, LIVE_SCENE, 160, 1290, "opacity:.9")}
 """)
 
-PRICE_ROWS = [("Поддерживающая", "от 2 400 ₽"), ("Генеральная", "от 4 900 ₽"), ("После ремонта", "от 6 200 ₽")]
+PRICE_ROWS = list(zip(("Поддерживающая", "Генеральная", "После ремонта"), C["prices"]))
 rows = "".join(f'<div class="row"><span>{t}</span><b>{p}</b></div>' for t, p in PRICE_ROWS)
 asset("live-cover-2_1080x1920", 1080, 1920, "navy", f"""
 <div style="{LIVE_TOP}">{logo(width=340, gid="l2")}</div>
@@ -131,8 +157,7 @@ asset("live-cover-2_1080x1920", 1080, 1920, "navy", f"""
   <div style="display:flex;flex-direction:column;gap:8px;width:680px">{rows}</div>
 </div>
 <div style="{LIVE_BOTTOM};flex-direction:column;align-items:center;gap:18px;text-align:center">
-  <div style="font-size:30px;font-weight:500;opacity:.85">2-комн.: поддерживающая — 3 900 ₽, генеральная — 10 600 ₽,<br>после ремонта — 13 700 ₽</div>
-  <div style="font-size:30px;font-weight:500;opacity:.85">Окна — 350 ₽ за створку · химчистка — 1 500 ₽ за предмет</div>
+  {"".join(f'<div style="font-size:30px;font-weight:500;opacity:.85">{n}</div>' for n in C["live_notes"])}
 </div>""", ".row{display:flex;justify-content:space-between;align-items:baseline;font-size:34px;font-weight:700;"
            "padding:9px 26px;border-radius:24px;background:rgba(255,255,255,.08)}.row b{color:#38BDF8;font-weight:800}")
 
@@ -171,16 +196,17 @@ asset("live-cover-5_1080x1920", 1080, 1920, "navy", f"""
 </div>
 <div style="{LIVE_BOTTOM};flex-direction:column;align-items:center;gap:30px">
   {I.svg(230, 250, I.stopwatch(12, 6, 1.5) + I.sparkle(210, 40, 12, I.SUN), "flex:none")}
-  <span class="pill" style="font-size:34px;padding:18px 38px">tyumen.cleanliness.pro</span>
+  <span class="pill" style="font-size:34px;padding:18px 38px">{C["site"]}</span>
 </div>""")
 
 # 3. Меню сообщества: 6 пунктов 752×512 (вдвое больше минимальных 376×256 — чётко на любых экранах)
-MENU = [("menu-1-prices", "fresh", "Цены", "Студия — от 2 400 ₽", I.spray(150, 40, 1.15) + I.sponge(20, 190, 1.0) + I.bubble(60, 130, 22)),
+MENU = [("menu-1-prices", "fresh", "Цены", C["menu_prices"], I.spray(150, 40, 1.15) + I.sponge(20, 190, 1.0) + I.bubble(60, 130, 22)),
         ("menu-2-order", "sky", "Расчёт<br>за 7 минут", "Напишите площадь", I.stopwatch(70, 40, 1.45) + I.sparkle(290, 50, 14)),
         ("menu-3-subscription", "navy", "Подписка<br>−15%", "Свой клинер раз в неделю", I.calendar(50, 60, 1.4) + I.sparkle(280, 50, 14, I.SUN)),
         ("menu-4-guarantee", "fresh", "Гарантия", "Переуберём за 24 часа", I.shield(70, 40, 1.45) + I.sparkle(40, 250, 10, I.SKY)),
         ("menu-5-gift", "sky", "Сертификаты", "На 5, 10 или 15 тысяч", I.gift(150, 0, 1.3)),
-        ("menu-6-jobs", "navy", "Работа<br>у нас", "Ищем клинеров в Тюмени", I.bucket(20, 130, 1.25) + I.squeegee(150, 70, .95))]
+        ("menu-6-jobs", "navy", "Работа<br>у нас", f"Ищем клинеров {C['loc']}", I.bucket(20, 130, 1.25) + I.squeegee(150, 70, .95))]
+MENU = [m for m in MENU if (m[0] != "menu-3-subscription" or C["subscription"]) and (m[0] != "menu-5-gift" or C["gifts"])]
 for name, theme, title, sub, ill in MENU:
     sub_color = "#334155" if theme == "fresh" else "rgba(255,255,255,.85)"
     asset(f"{name}_752x512", 752, 512, theme, f"""
@@ -193,15 +219,15 @@ for name, theme, title, sub, ill in MENU:
 
 # 4. Карточки услуг 1000×1000 (раздел «Услуги» или «Товары»)
 SERVICES = [
-    ("service-maintenance", "Поддерживающая уборка", "от 2 400 ₽", "Полы, пыль, кухня, санузел. Свой клинер по подписке −15%",
+    ("service-maintenance", "Поддерживающая уборка", C["prices"][0], f"Полы, пыль, кухня, санузел. {C['maintenance_note']}",
      I.spray(330, 40, 1.9) + I.sponge(90, 270, 1.7) + I.bubble(120, 120, 36) + I.bubble(190, 70, 20) + I.sparkle(620, 90, 26, I.SKY)),
-    ("service-general", "Генеральная уборка", "от 4 900 ₽", "Налёт, жир, труднодоступные места. Фотоотчёт до и после",
+    ("service-general", "Генеральная уборка", C["prices"][1], "Налёт, жир, труднодоступные места. Фотоотчёт до и после",
      I.bucket(60, 130, 2.0) + I.spray(420, 40, 1.75) + I.sparkle(620, 70, 28, I.SUN) + I.sparkle(80, 80, 18, I.SKY)),
-    ("service-post-renovation", "Уборка после ремонта", "от 6 200 ₽", "Строительная пыль, затирка, окна от плёнки",
+    ("service-post-renovation", "Уборка после ремонта", C["prices"][2], "Строительная пыль, затирка, окна от плёнки",
      I.roller(70, 40, 1.75, -24) + I.bucket(360, 150, 1.8) + I.sparkle(640, 90, 24, I.SKY)),
-    ("service-windows", "Мытьё окон", "350 ₽ / створка", "Без разводов. Вместе с уборкой — без доплаты за выезд",
+    ("service-windows", "Мытьё окон", f"{C['windows']} / створка", "Без разводов. Вместе с уборкой — без доплаты за выезд",
      I.window(170, 10, 320, 360) + I.squeegee(470, 160, 1.6, -24) + I.sparkle(110, 90, 22, I.SKY)),
-    ("service-upholstery", "Химчистка мебели", "1 500 ₽ / предмет", "Диваны, кресла, матрасы — на дому",
+    ("service-upholstery", "Химчистка мебели", f"{C['upholstery']} / предмет", "Диваны, кресла, матрасы — на дому",
      I.sofa(70, 150, 2.05) + I.spray(560, 30, 1.25) + I.bubble(60, 110, 26)),
     ("service-office", "Уборка офисов", "по договору", "Ежедневно или по графику. Договор, ЭДО, закрывающие документы",
      I.building(150, 0, 1.55) + I.calendar(430, 190, 1.35) + I.sparkle(110, 80, 22, I.SUN)),
@@ -224,7 +250,7 @@ asset("pinned-post_1080x1350", 1080, 1350, "fresh", f"""
 <div style="position:absolute;left:84px;right:84px;top:84px;display:flex;flex-direction:column;gap:30px">
   {logo("color", width=400, gid="pp")}
   <div class="kicker" style="font-size:28px;margin-top:20px;color:#0369A1">Добро пожаловать</div>
-  <h1 style="font-size:80px">Уборка в Тюмени<br><em>с ценой до выезда</em></h1>
+  <h1 style="font-size:80px">Уборка {C["loc"]}<br><em>с ценой до выезда</em></h1>
   <div style="display:grid;gap:20px;font-size:36px;font-weight:700;margin-top:8px">
     <div style="display:flex;gap:18px;align-items:center">{ck(46)}Расчёт за 7 минут в сообщениях</div>
     <div style="display:flex;gap:18px;align-items:center">{ck(46)}Свои средства и инвентарь</div>
@@ -232,8 +258,7 @@ asset("pinned-post_1080x1350", 1080, 1350, "fresh", f"""
     <div style="display:flex;gap:18px;align-items:center">{ck(46)}Не понравилось — переуберём за 24 ч</div>
   </div>
   <div style="display:grid;gap:10px;font-size:32px;font-weight:500;color:#334155;margin-top:14px;max-width:520px">
-    <div>Поддерживающая — <b style="color:#0F172A">от 2 400 ₽</b></div><div>Генеральная — <b style="color:#0F172A">от 4 900 ₽</b></div>
-    <div>После ремонта — <b style="color:#0F172A">от 6 200 ₽</b></div></div>
+    {"".join(f'<div>{t} — <b style="color:#0F172A">{p}</b></div>' for t, p in PRICE_ROWS)}</div>
 </div>
 <span class="pill" style="position:absolute;left:84px;bottom:84px;font-size:36px;padding:20px 36px">Написать — расчёт за 7 минут</span>
 """)
@@ -242,10 +267,9 @@ asset("pinned-post_1080x1350", 1080, 1350, "fresh", f"""
 asset("post-template-price_1080x1350", 1080, 1350, "navy", f"""
 <div style="position:absolute;inset:90px;display:flex;flex-direction:column;justify-content:space-between">
   {logo(width=420, gid="p1")}
-  <div style="display:grid;gap:30px"><div class="kicker" style="font-size:28px">Тюмень · цены 2026</div>
-  <h1 style="font-size:84px">Уборка после ремонта<br><em>без «от» и сюрпризов</em></h1>
-  <div style="display:grid;gap:14px;font-size:42px;font-weight:700"><div>Студия — 6 200 ₽</div><div>1-комнатная — 9 950 ₽</div>
-  <div>2-комнатная — 13 700 ₽</div><div>3-комнатная, 2 с/у — 18 950 ₽</div></div></div>
+  <div style="display:grid;gap:30px"><div class="kicker" style="font-size:28px">{C["kicker"]}</div>
+  <h1 style="font-size:84px">{C["price_post"][0]}</h1>
+  <div style="display:grid;gap:14px;font-size:42px;font-weight:700">{"".join(f"<div>{r}</div>" for r in C["price_post"][1])}</div></div>
   <span class="pill" style="font-size:36px;padding:18px 32px;align-self:flex-start">Рассчитать свою — в сообщения</span>
 </div>""")
 asset("post-template-tip_1080x1350", 1080, 1350, "light", f"""
@@ -264,7 +288,7 @@ asset("post-template-review_1080x1350", 1080, 1350, "light", f"""
   <div style="font-size:34px;font-weight:700">[Имя], [ЖК или район] · <span style="color:#0369A1">★★★★★</span> [площадка]</div></div>
   <div class="ph" style="font-size:30px">Только настоящие отзывы — ссылка на оригинал в тексте поста</div>
 </div>""")
-asset("post-template-promo_1080x1350", 1080, 1350, "sky", f"""
+(asset if C["promo"] else (lambda *_: None))("post-template-promo_1080x1350", 1080, 1350, "sky", f"""
 <div style="position:absolute;inset:90px;display:flex;flex-direction:column;justify-content:space-between">
   {logo("1c-white", width=420, gid="p4")}
   <div style="display:grid;gap:30px"><div class="kicker" style="font-size:28px">Групповая скидка ЖК</div>
@@ -293,7 +317,7 @@ def img(name, style):
 
 
 AVATAR = os.path.abspath(os.path.join(TOOLS, "..", "brand", "png", "vk-avatar_1000.png"))
-NAME = "Точка Чистоты — клининг в Тюмени"
+NAME = f"Точка Чистоты — клининг {C['loc']}"
 STATUS = "Цена до выезда · оплата после приёмки · ответ за 7 минут"
 UI_CSS = (".ui{background:#EDEEF0;color:#0F172A}.box{background:#fff;border-radius:14px}"
           ".btn{display:inline-block;font-weight:700;border-radius:10px;padding:12px 24px}"
