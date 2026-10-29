@@ -9,6 +9,7 @@
 | [`apparel/`](apparel/README.md) | Форма: концепция комплекта (крой, ткани, цвета, слоганы на спину, шевроны грейдов, бейдж, светоотражающее), печатные файлы 1:1, техзадание на 4 листа, бриф для производителя. УТП, на которые она работает, — `strategy/docs/07-usp.md` | `apparel/lookbook.pdf` |
 | [`vk/`](vk/README.md) | Оформление сообщества с фирменными иллюстрациями: обложка, живая обложка из 5 кадров, меню из 6 пунктов, 6 карточек услуг, закреплённый пост, шаблоны постов и историй, примерный вид страницы. План продвижения на 5 недель: настройка, тексты, рубрики, календарь, 8 готовых постов, сообщения, рост, метрики | `vk/design/preview-desktop.png` |
 | [`video/`](video/scripts.md) | 15 клипов для VK Клипов: готовые MP4 1080×1920 и сценарии с промптами для ИИ-видео, голосом, подписями и хештегами | `video/scripts.md` |
+| [`print/business-cards/`](print/business-cards/README.md) | Визитки 90×50 мм под печать: общая компании и шаблон именной, вылеты 2 мм, CMYK с фирменными значениями, текст в кривых, QR с UTM | `print/business-cards/card-company_preview.png` |
 | `fonts/` | Manrope (SIL OFL 1.1) — фирменный шрифт | |
 | `tools/` | Генераторы: всё пересобирается из кода | см. ниже |
 
@@ -43,6 +44,7 @@ python3 marketing/tools/build_brand.py           # логотипы
 python3 marketing/tools/build_apparel.py         # печатные файлы формы
 python3 marketing/tools/build_techsheet.py       # техзадание для типографии
 python3 marketing/tools/build_uniform.py         # концепция формы: lookbook.pdf
+python3 marketing/tools/build_cards.py           # визитки (нужен Ghostscript для CMYK)
 python3 marketing/tools/build_vk.py              # оформление VK (иллюстрации — tools/illustrations.py)
 python3 marketing/tools/build_clips.py           # HTML-сцены клипов и video/scripts.md
 node marketing/tools/render_clips.js             # немые MP4 в video/silent (≈ 2 мин на клип); можно номера: 1 7
